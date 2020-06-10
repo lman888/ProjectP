@@ -1,5 +1,5 @@
 #pragma once
-#include "GL/glew.h"
+#include "GLAD/glad.h"
 #include "GLFW/glfw3.h"
 
 #include <iostream>
@@ -9,11 +9,11 @@ class Application
 
 public:
 
-	bool StartUp();
+	int StartUp(void);
 
-	void Update();
+	int Update();
 
-	void Terminate();
+	int Terminate();
 
 protected:
 
