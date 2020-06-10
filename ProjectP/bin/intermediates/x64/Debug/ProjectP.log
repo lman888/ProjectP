@@ -1,0 +1,7 @@
+﻿  Application.cpp
+D:\Development\ProjectP\ProjectP\src\Application.cpp(7,12): warning C4305: 'return': truncation from 'int' to 'bool'
+D:\Development\ProjectP\ProjectP\src\Application.cpp(17,12): warning C4305: 'return': truncation from 'int' to 'bool'
+  Main.cpp
+  Generating Code...
+D:\Development\ProjectP\ProjectP\src\Application.cpp(22): warning C4715: 'Application::StartUp': not all control paths return a value
+  ProjectP.vcxproj -> D:\Development\ProjectP\ProjectP\bin\x64\Debug\ProjectP.exe

@@ -1,13 +1,15 @@
 #pragma once
-#include <GLFW/glfw3.h>
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
 
+#include <iostream>
 
 class Application
 {
 
 public:
 
-	int StartUp();
+	bool StartUp();
 
 	void Update();
 
@@ -15,8 +17,9 @@ public:
 
 protected:
 
+
 private:
-	
-	GLFWwindow* m_window;
+
+	GLFWwindow* m_window = NULL;
 
 };

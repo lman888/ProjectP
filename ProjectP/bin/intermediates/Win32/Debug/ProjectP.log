@@ -1,3 +1,3 @@
-﻿  Main.cpp
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
-  ProjectP.vcxproj -> D:\Development\ProjectP\ProjectP\bin\Win32\Debug\ProjectP.exe
+﻿LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+Application.obj : error LNK2001: unresolved external symbol _glad_glClear
+D:\Development\ProjectP\ProjectP\bin\Win32\Debug\ProjectP.exe : fatal error LNK1120: 1 unresolved externals

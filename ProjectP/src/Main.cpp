@@ -4,7 +4,7 @@
 
 int main()
 {
-	Application* m_application = new Application;
+	Application* m_application = new Application();
 
 	if (m_application->StartUp())
 	{

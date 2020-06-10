@@ -1,6 +1,6 @@
 #include "Application.h"
 
-int Application::StartUp()
+bool Application::StartUp()
 {
 	if (!glfwInit())
 	{
@@ -12,8 +12,9 @@ int Application::StartUp()
 
 	if (!m_window)
 	{
+		std::cout << " Failed to Create GLFW Window " << std::endl;
 		glfwTerminate();
-		return -1;
+		return -2;
 	}
 
 	/* Make the windows context current */
