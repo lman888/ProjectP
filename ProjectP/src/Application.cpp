@@ -47,6 +47,8 @@ int Application::StartUp(void)
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
+
+	m_renderer.CompileShader();
 }
 
 int Application::Update()

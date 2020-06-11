@@ -34,10 +34,18 @@ void Renderer::DrawTriangle()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	/* Compiles the basic Vertex Shader Code */
+	/* Uses the newly created Shader Program */
+	/* Every Shader and rendering call after glUseProgram will now use this Program Object (and this the Shaders) */
+	glUseProgram(m_shaderProgram);
 
-	/* Vertex Shader ID */
-	unsigned int m_vertexShader;
+	glBindVertexArray(VAO);
+	/* This function draws primitives using the current active shader */
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void Renderer::CompileShader()
+{
+	/* Compiles the basic Vertex Shader Code */
 
 	/* Stores the Vertex Shader into the Shader ID */
 	m_vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -48,9 +56,6 @@ void Renderer::DrawTriangle()
 	/* Compile the Vertex Shader */
 	glCompileShader(m_vertexShader);
 
-	/* Checks if the Shader compiled successfully */
-	int m_success = 0;
-	char m_infoLog[512];
 	/* This checks if compilation was successfull */
 	glGetShaderiv(m_vertexShader, GL_COMPILE_STATUS, &m_success);
 
@@ -63,9 +68,6 @@ void Renderer::DrawTriangle()
 	}
 
 	/* Compiltes the basic Fragment Shader Code */
-
-	/* Fragment Shader ID */
-	unsigned int m_fragShader;
 
 	/* Stores the Fragment Shader into the Shader ID */
 	m_fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -90,9 +92,6 @@ void Renderer::DrawTriangle()
 	/* Shader Program */
 
 	/* Final linked version of the Shaders combined */
-
-	/* Shader Program ID */
-	unsigned int m_shaderProgram;
 	/* Returns the ID of the newly created Shader Program Object (m_shaderProgram) */
 	m_shaderProgram = glCreateProgram();
 
@@ -113,14 +112,6 @@ void Renderer::DrawTriangle()
 		/* Prints out the error message */
 		std::cout << " ERROR::SHADER::PROGRAM:COMPILATION_FAILED\n " << m_infoLog << std::endl;
 	}
-
-	/* Uses the newly created Shader Program */
-	/* Every Shader and rendering call after glUseProgram will now use this Program Object (and this the Shaders) */
-	glUseProgram(m_shaderProgram);
-
-	glBindVertexArray(VAO);
-	/* This function draws primitives using the current active shader */
-	glDrawArrays(GL_TRIANGLES, 0, 3);
 
 	/* Don't forget to delete the Shader Objects once we've linked them into the program */
 	glDeleteShader(m_vertexShader);

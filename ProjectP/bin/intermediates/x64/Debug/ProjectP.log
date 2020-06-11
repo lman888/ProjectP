@@ -1,1 +1,7 @@
-﻿  ProjectP.vcxproj -> D:\Development\ProjectP\ProjectP\bin\x64\Debug\ProjectP.exe
+﻿  Application.cpp
+D:\Development\ProjectP\ProjectP\src\Application.cpp(63,37): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+  Main.cpp
+  Renderer.cpp
+  Generating Code...
+D:\Development\ProjectP\ProjectP\src\Application.cpp(52): warning C4715: 'Application::StartUp': not all control paths return a value
+  ProjectP.vcxproj -> D:\Development\ProjectP\ProjectP\bin\x64\Debug\ProjectP.exe
