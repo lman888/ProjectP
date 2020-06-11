@@ -1,6 +1,7 @@
 #pragma once
 #include "GLAD/glad.h"
 #include "GLFW/glfw3.h"
+#include "Renderer.h"
 
 #include <iostream>
 
@@ -21,5 +22,7 @@ protected:
 private:
 
 	GLFWwindow* m_window = NULL;
+	
+	Renderer m_renderer;
 
 };

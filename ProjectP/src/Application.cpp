@@ -4,9 +4,15 @@ void FramBufferSizeCallBack(GLFWwindow* a_window, int a_width, int a_height);
 
 void ProcessInput(GLFWwindow* a_window);
 
+/* Window Settings */
+const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 800;
+
+
 int Application::StartUp(void)
 {
 
+	/* Initializes and Configures GLFW */
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -19,7 +25,7 @@ int Application::StartUp(void)
 	}
 
 	/* Create a windowed mode window and its OpenGL context */
-	m_window = glfwCreateWindow(640, 480, "ProjectP", NULL, NULL);
+	m_window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "ProjectP", NULL, NULL);
 
 	/* Checks if the window was created */
 	if (!m_window)
@@ -32,16 +38,15 @@ int Application::StartUp(void)
 	/* Make the windows context current */
 	glfwMakeContextCurrent(m_window);
 
+	/* Checks if the Window has been resized */
+	glfwSetFramebufferSizeCallback(m_window, FramBufferSizeCallBack);
+
 	/* Checks if GLAD was loaded correctly */
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
-
-	/* Tells OpenGL the size of the rendering window */
-	glViewport(0, 0, 640, 480);
-
 }
 
 int Application::Update()
@@ -58,8 +63,7 @@ int Application::Update()
 		/* When we call glClear, the entire colour buffer will be filled with the colour as configured by glClearColor */
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		/* Checks if the Window has been resized */
-		glfwSetFramebufferSizeCallback(m_window, FramBufferSizeCallBack);
+		m_renderer.DrawTriangle();
 
 		/* Poll for Events */
 		glfwPollEvents();
@@ -68,6 +72,7 @@ int Application::Update()
 		glfwSwapBuffers(m_window);
 	}
 
+	/* Terminates the Application */
 	glfwTerminate();
 	return 0;
 }
@@ -81,9 +86,11 @@ int Application::Terminate()
 /* Resize Window Callback Function*/
 void FramBufferSizeCallBack(GLFWwindow* a_window, int a_width, int a_height)
 {
+	/* Tells OpenGL the size of the rendering window */
 	glViewport(0, 0, a_width, a_height);
 }
 
+/* Input Callback Function */
 void ProcessInput(GLFWwindow* a_window)
 {
 	/* Closes the Window */
