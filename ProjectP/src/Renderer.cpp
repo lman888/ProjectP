@@ -8,17 +8,15 @@ void Renderer::DrawTriangle()
 	/* The Triangle primitive Coordinates */
 	float m_vertices[18] =
 	{
-		/* First Triangle */
-		0.5f,  0.5f, 0.0f, /* Top Right */
-		0.5f, -0.5f, 0.0f, /* Bottom Right */
-	   -0.5f, -0.5f, 0.0f, /* Bottom Left */
-	   -0.5f,  0.5f, 0.0f  /* Top Left */
+		/* First Triangle */ /* Colors */
+	   -0.5f, -0.5f, 0.0f,   1.0f, 0.0f, 0.0f, /* Bottom Right */
+	    0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, /* Bottom Left */
+	    0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 1.0f  /* Top */
 	};
 
-	unsigned int m_indices[6]
+	unsigned int m_indices[3]
 	{
-		0, 1, 3, /* First Triangle */
-		1, 2, 3  /* Second Triangle */
+		0, 1, 2, /* First Triangle */
 	};
 
 	/* Generates a Buffer ID using the glGenBuffers (VBO - Vertex Buffer Object) */
@@ -42,8 +40,12 @@ void Renderer::DrawTriangle()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices, GL_STATIC_DRAW);
 
 	/* Sets the Vertex Attribute Pointers */
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	/* Color Attribute */
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3* sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	/* Uses the newly created Shader Program */
 	/* Every Shader and rendering call after glUseProgram will now use this Program Object (and this the Shaders) */
@@ -51,7 +53,7 @@ void Renderer::DrawTriangle()
 
 	glBindVertexArray(VAO);
 	/* This function draws primitives using the current active shader */
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 	/* Draws Triagnles in WireFrame Mode */
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	/* Sets the Triangles to its default look */

@@ -49,6 +49,10 @@ int Application::StartUp(void)
 	}
 
 	m_renderer.CompileShader();
+
+	int m_nrAttributes;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &m_nrAttributes);
+	std::cout << " Maximum nr of Vertex Attributes supported: " << m_nrAttributes << std::endl;
 }
 
 int Application::Update()
