@@ -6,16 +6,25 @@ void Renderer::DrawTriangle()
 	/* Draws the Triangle */
 
 	/* The Triangle primitive Coordinates */
-	float m_vertices[9] =
+	float m_vertices[18] =
 	{
-		-0.5f, -0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		 0.0f,  0.5f, 0.0f
+		/* First Triangle */
+		0.5f,  0.5f, 0.0f, /* Top Right */
+		0.5f, -0.5f, 0.0f, /* Bottom Right */
+	   -0.5f, -0.5f, 0.0f, /* Bottom Left */
+	   -0.5f,  0.5f, 0.0f  /* Top Left */
+	};
+
+	unsigned int m_indices[6]
+	{
+		0, 1, 3, /* First Triangle */
+		1, 2, 3  /* Second Triangle */
 	};
 
 	/* Generates a Buffer ID using the glGenBuffers (VBO - Vertex Buffer Object) */
-	unsigned int VBO, VAO;
+	unsigned int VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &EBO);
 	glGenBuffers(1, &VBO);
 
 	/* Binds the VAO (Vertex Array Object) From this point onwards, we can bind/configure the - */
@@ -24,11 +33,13 @@ void Renderer::DrawTriangle()
 	/* GL_ARRAY_BUFFER is a Vertex Buffer Object */
 	/* glBindBuffer binds the newly created Buffer to the Buffer Object (GL_ARRAY_BUFFER) */
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices, GL_STATIC_DRAW);
 
 	/* From this point, any buffer calls we make (on GL_ARRAY_BUFFER) will be used to configure - */
 	/* The current bound Buffer Object (Which is VBO) */
 	/* glBufferData function copies the Vertex Data into the Buffers memory */
-	glBufferData(GL_ARRAY_BUFFER, sizeof(m_vertices), m_vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_indices), m_indices, GL_STATIC_DRAW);
 
 	/* Sets the Vertex Attribute Pointers */
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -40,7 +51,12 @@ void Renderer::DrawTriangle()
 
 	glBindVertexArray(VAO);
 	/* This function draws primitives using the current active shader */
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	/* Draws Triagnles in WireFrame Mode */
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	/* Sets the Triangles to its default look */
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glBindVertexArray(0);
 }
 
 void Renderer::CompileShader()

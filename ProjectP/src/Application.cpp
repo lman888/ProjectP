@@ -79,6 +79,7 @@ int Application::Update()
 	return 0;
 }
 
+/* Terminates Program */
 int Application::Terminate()
 {
 	glfwTerminate();

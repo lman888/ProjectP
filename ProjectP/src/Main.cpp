@@ -4,6 +4,7 @@
 
 int main()
 {
+	/* Public Variable */
 	Application* m_application = new Application();
 
 	if (m_application->StartUp())
