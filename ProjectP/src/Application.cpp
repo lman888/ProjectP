@@ -8,7 +8,6 @@ void ProcessInput(GLFWwindow* a_window);
 const unsigned int SCR_HEIGHT = 600;
 const unsigned int SCR_WIDTH = 800;
 
-
 int Application::StartUp(void)
 {
 
@@ -48,11 +47,14 @@ int Application::StartUp(void)
 		return -1;
 	}
 
-	m_renderer.CompileShader();
+	/* Pass in the Shader Files */
+	m_shader.ConstructShaders("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
 
-	int m_nrAttributes;
-	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &m_nrAttributes);
-	std::cout << " Maximum nr of Vertex Attributes supported: " << m_nrAttributes << std::endl;
+	/* Generates the Triangle */
+	m_renderer.GenerateTriangle();
+
+	/* Uses Shader Program */
+	m_shader.UseProgram();
 }
 
 int Application::Update()
@@ -69,11 +71,11 @@ int Application::Update()
 		/* When we call glClear, the entire colour buffer will be filled with the colour as configured by glClearColor */
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		/* Calls the Triangle Render */
 		m_renderer.DrawTriangle();
 
 		/* Poll for Events */
 		glfwPollEvents();
-
 		/* Swap the front and back buffers */
 		glfwSwapBuffers(m_window);
 	}
@@ -86,6 +88,7 @@ int Application::Update()
 /* Terminates Program */
 int Application::Terminate()
 {
+	m_renderer.Terminate();
 	glfwTerminate();
 	return 0;
 }
