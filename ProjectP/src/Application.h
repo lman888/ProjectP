@@ -3,6 +3,7 @@
 #include "GLFW/glfw3.h"
 #include "Renderer.h"
 #include "Shader.h"
+#include "Texture.h"
 
 #include <iostream>
 

@@ -46,19 +46,18 @@ int Application::StartUp(void)
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
+}
 
+int Application::Update()
+{
 	/* Pass in the Shader Files */
 	m_shader.ConstructShaders("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
 
 	/* Generates the Triangle */
 	m_renderer.GenerateTriangle();
 
-	/* Uses Shader Program */
-	m_shader.UseProgram();
-}
+	Texture m_texture("Textures/container.jpg");
 
-int Application::Update()
-{
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
 	{
@@ -70,6 +69,13 @@ int Application::Update()
 
 		/* When we call glClear, the entire colour buffer will be filled with the colour as configured by glClearColor */
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		/* Binds the Texture */
+		m_texture.Bind(0);
+
+
+		/* Uses Shader Program */
+		m_shader.UseProgram();
 
 		/* Calls the Triangle Render */
 		m_renderer.DrawTriangle();
