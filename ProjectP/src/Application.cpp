@@ -13,10 +13,9 @@ int Application::StartUp(void)
 
 	/* Initializes and Configures GLFW */
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_OPENGL_ANY_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
 
 	if (!glfwInit())
 	{
@@ -50,55 +49,48 @@ int Application::StartUp(void)
 
 int Application::Update()
 {
-	/* Rectangle Primitives */
-	float m_vertices[36] =
+	/* Vertex Positions */
+	float m_vertices[4 * 2] =
 	{
-		//Position           //Colors             //Texture Coords
-		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,    1.0f, 1.0f,	//Top Right
-		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,    1.0f, 0.0f,	//Bottom Right
-	   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,    0.0f, 0.0f,	//Bottom Left
-	   -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,    0.0f, 1.0f	//Top Left
+		-0.5f, -0.5f, // 0
+		 0.5f, -0.5f, // 1
+		 0.5f,  0.5f, // 2
+		-0.5f,  0.5f, // 3
 	};
 
-	unsigned int m_indices[6] =
+	unsigned int m_indices[2 * 3] =
 	{
 		0, 1, 3, //First Triangle
 		1, 2, 3  //Second Triangle
 	};
 
+	unsigned int VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	VertexArray VA;
+	/* VERTEX BUFFER BINDING */
+	/* Creates a Vertex Buffer and specifies the size */
+	VertexBuffer VB(m_vertices, 4 * 2 * sizeof(float));
+
+	VertexBufferLayout m_Layout;
+	/* Specifies what data will go into the Vertex Array */
+	m_Layout.Push<float>(2);
+	/* Adds the Vertex Buffer to the Vertex Array */
+	VA.AddBuffer(VB, m_Layout);
+
+	/* INDEX BUFFER BINDING */
+	IndexBuffer IB(m_indices, 6);
+
 	/* Pass in the Shader Files */
 	Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
 
-	/* Draws the Triangle */
-
-	/* Vertex, Element and Array Buffer ID's */
-	unsigned int VAO;
-	glGenVertexArrays(1, &VAO);
-	//* Binds the VAO (Vertex Array Object) From this point onwards, we can bind/configure the - */
-	//* Corresponding VBO(s) and attribute pointer(s) and then unbind the VAO for later use */
-	glBindVertexArray(VAO);
-
-
-	//* VERTEX BUFFER BINDING */
-	//* Generates a Buffer ID using the glGenBuffers (VBO - Vertex Buffer Object) */
-	VertexBuffer VB(m_vertices, 4 * 8 * sizeof(float));
-
-	//* INDEX BUFFER BINDING */
-	IndexBuffer IB(m_indices, 6);
-
-	//* Sets the Vertex Attribute Pointers */
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-
-	//* Color Attribute */
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	//* Texture Coord Attribute */
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
 	Texture m_texture("Textures/WallPaper2.jpg");
+
+	/* Unbinds all our buffers */
+	glUseProgram(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -112,14 +104,18 @@ int Application::Update()
 		/* When we call glClear, the entire colour buffer will be filled with the colour as configured by glClearColor */
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		/* Binds the Texture */
+		/* UnBinds the Texture */
 		m_texture.Bind(0);
 
-		/* Uses Shader Program */
+		/* Uses Shader Program/Binds the Shader */
 		m_shader.UseProgram();
 
+		/* Binds the Vertex Array Buffer (Which also binds the Vertex Buffer Object */
+		VA.Bind();
+		/* Binds our Index Buffer */
 		IB.Bind();
-		glBindVertexArray(VAO);
+
+		/* Draws the Shape we defined with our Buffers */
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		/* Poll for Events */
