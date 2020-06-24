@@ -4,6 +4,8 @@
 #include "Renderer.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
 
 #include <iostream>
 
@@ -25,9 +27,6 @@ private:
 
 	/* Calls the GLFW Window */
 	GLFWwindow* m_window = NULL;
-
-	/* Calls the Shader Class */
-	Shader m_shader;
 
 	/* Calls the Renderer */
 	Renderer m_renderer;

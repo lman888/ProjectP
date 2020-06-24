@@ -14,9 +14,8 @@ class Shader
 {
 public:
 
-	Shader();
-
-	void ConstructShaders(const char* a_vertexPath, const char* a_fragmentPath);
+	Shader(const char* a_vertexPath, const char* a_fragmentPath);
+	~Shader();
 
 	/* Use/Activate the Shader */
 	void UseProgram();

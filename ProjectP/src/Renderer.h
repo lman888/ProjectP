@@ -16,9 +16,6 @@ public:
 protected:
 
 private:
-
-	/* Vertex, Element and Array Buffer ID's */
-	unsigned int VBO, VAO, EBO;
 	/* Texture Data */
 	unsigned int m_texture;
 };

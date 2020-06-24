@@ -50,13 +50,55 @@ int Application::StartUp(void)
 
 int Application::Update()
 {
+	/* Rectangle Primitives */
+	float m_vertices[36] =
+	{
+		//Position           //Colors             //Texture Coords
+		0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,    1.0f, 1.0f,	//Top Right
+		0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,    1.0f, 0.0f,	//Bottom Right
+	   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,    0.0f, 0.0f,	//Bottom Left
+	   -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,    0.0f, 1.0f	//Top Left
+	};
+
+	unsigned int m_indices[6] =
+	{
+		0, 1, 3, //First Triangle
+		1, 2, 3  //Second Triangle
+	};
+
 	/* Pass in the Shader Files */
-	m_shader.ConstructShaders("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
+	Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
 
-	/* Generates the Triangle */
-	m_renderer.GenerateTriangle();
+	/* Draws the Triangle */
 
-	Texture m_texture("Textures/container.jpg");
+	/* Vertex, Element and Array Buffer ID's */
+	unsigned int VAO;
+	glGenVertexArrays(1, &VAO);
+	//* Binds the VAO (Vertex Array Object) From this point onwards, we can bind/configure the - */
+	//* Corresponding VBO(s) and attribute pointer(s) and then unbind the VAO for later use */
+	glBindVertexArray(VAO);
+
+
+	//* VERTEX BUFFER BINDING */
+	//* Generates a Buffer ID using the glGenBuffers (VBO - Vertex Buffer Object) */
+	VertexBuffer VB(m_vertices, 4 * 8 * sizeof(float));
+
+	//* INDEX BUFFER BINDING */
+	IndexBuffer IB(m_indices, 6);
+
+	//* Sets the Vertex Attribute Pointers */
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	//* Color Attribute */
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	//* Texture Coord Attribute */
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	Texture m_texture("Textures/WallPaper2.jpg");
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -73,12 +115,12 @@ int Application::Update()
 		/* Binds the Texture */
 		m_texture.Bind(0);
 
-
 		/* Uses Shader Program */
 		m_shader.UseProgram();
 
-		/* Calls the Triangle Render */
-		m_renderer.DrawTriangle();
+		IB.Bind();
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		/* Poll for Events */
 		glfwPollEvents();

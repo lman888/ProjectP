@@ -1,14 +1,9 @@
 #include "Shader.h"
 
-Shader::Shader()
-{
-
-}
-
-void Shader::ConstructShaders(const char* a_vertexPath, const char* a_fragmentPath)
+Shader::Shader(const char* a_vertexPath, const char* a_fragmentPath)
 {
 	/* Retrieves the Vertex/Fragment source code from the File Path */
-	/* Vert Code Path */
+/* Vert Code Path */
 	std::string vertexCode;
 	/* Frag Code Path */
 	std::string fragmentCode;
@@ -92,6 +87,11 @@ void Shader::ConstructShaders(const char* a_vertexPath, const char* a_fragmentPa
 	/* Deletes the Shaders after they are linked into our program */
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
+}
+
+Shader::~Shader()
+{
+
 }
 
 void Shader::UseProgram()
