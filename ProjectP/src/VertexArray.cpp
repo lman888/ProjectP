@@ -36,7 +36,6 @@ void VertexArray::AddBuffer(const VertexBuffer& a_VB, const VertexBufferLayout& 
 		/* Checks the Size of each Type */
 		OffSet += element.m_Count * VertexBufferLayoutElement::GetSizeOfType(element.m_Type);
 	}
-
 }
 
 void VertexArray::Bind() const

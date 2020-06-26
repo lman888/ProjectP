@@ -50,31 +50,29 @@ int Application::StartUp(void)
 int Application::Update()
 {
 	/* Vertex Positions */
-	float m_vertices[4 * 2] =
+	float m_vertices[4 * 4] =
 	{
-		-0.5f, -0.5f, // 0
-		 0.5f, -0.5f, // 1
-		 0.5f,  0.5f, // 2
-		-0.5f,  0.5f, // 3
+		//Position     //Texture Coords
+	   -0.5f, -0.5f,   0.0f, 0.0f, // 0 - Bottom Left
+	    0.5f, -0.5f,   1.0f, 0.0f, // 1 - Right Side
+	    0.5f,  0.5f,   1.0f, 1.0f, // 2 - Top Right
+	   -0.5f,  0.5f,   0.0f, 1.0f  // 3 - Left Side
 	};
 
 	unsigned int m_indices[2 * 3] =
 	{
-		0, 1, 3, //First Triangle
-		1, 2, 3  //Second Triangle
+		0, 1, 2, //First Triangle
+		2, 3, 0  //Second Triangle
 	};
-
-	unsigned int VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
 
 	VertexArray VA;
 	/* VERTEX BUFFER BINDING */
 	/* Creates a Vertex Buffer and specifies the size */
-	VertexBuffer VB(m_vertices, 4 * 2 * sizeof(float));
+	VertexBuffer VB(m_vertices, 4 * 4 * sizeof(float));
 
 	VertexBufferLayout m_Layout;
 	/* Specifies what data will go into the Vertex Array */
+	m_Layout.Push<float>(2);
 	m_Layout.Push<float>(2);
 	/* Adds the Vertex Buffer to the Vertex Array */
 	VA.AddBuffer(VB, m_Layout);
@@ -85,12 +83,18 @@ int Application::Update()
 	/* Pass in the Shader Files */
 	Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
 
-	Texture m_texture("Textures/WallPaper2.jpg");
+	Texture m_texture("Textures/Future City.png");
 
-	/* Unbinds all our buffers */
-	glUseProgram(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	/* Binds the Texture */
+	/* Since no argument was put in, it is automatically 0 */
+	m_texture.Bind();
+	/* Sets the Uniform of Texture at Slot 0 */
+	/* Must Match what slot the Texture was bound to */
+	m_shader.SetInt("u_Texture", 0);
+
+	VA.UnBind();
+	VB.Unbind();
+	IB.Unbind();
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -103,9 +107,6 @@ int Application::Update()
 
 		/* When we call glClear, the entire colour buffer will be filled with the colour as configured by glClearColor */
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		/* UnBinds the Texture */
-		m_texture.Bind(0);
 
 		/* Uses Shader Program/Binds the Shader */
 		m_shader.UseProgram();

@@ -20,10 +20,11 @@ public:
 	/* Use/Activate the Shader */
 	void UseProgram();
 
-	/* Utility Form Functions */
+	/* Set Uniform Functions */
 	void SetBool(const std::string &a_name, bool a_value) const;
 	void SetInt(const std::string &a_name, int a_value) const;
 	void SetFloat(const std::string &a_name, float a_value) const;
+
 	void TerminateProgram();
 
 protected:
