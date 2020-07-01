@@ -4,12 +4,12 @@
 
 VertexArray::VertexArray()
 {
-	glGenVertexArrays(1, &m_RendererID);
+	GLCall(glGenVertexArrays(1, &m_RendererID));
 }
 
 VertexArray::~VertexArray()
 {
-	glDeleteVertexArrays(1, &m_RendererID);
+	GLCall(glDeleteVertexArrays(1, &m_RendererID));
 }
 
 void VertexArray::AddBuffer(const VertexBuffer& a_VB, const VertexBufferLayout& a_Layout)
@@ -28,10 +28,10 @@ void VertexArray::AddBuffer(const VertexBuffer& a_VB, const VertexBufferLayout& 
 		/* Iterates through the Elements */
 		const auto& element = Elements[i];
 		//* Sets the Vertex Attribute Pointers */
-		glEnableVertexAttribArray(i);
+		GLCall(glEnableVertexAttribArray(i));
 		/* Specifies the layout of the Vertex Buffer with the data provided*/
-		glVertexAttribPointer(i, element.m_Count, element.m_Type,
-		element.m_Noramlized, a_Layout.GetStride(), (const void*)OffSet);
+		GLCall(glVertexAttribPointer(i, element.m_Count, element.m_Type,
+		element.m_Noramlized, a_Layout.GetStride(), (const void*)OffSet));
 
 		/* Checks the Size of each Type */
 		OffSet += element.m_Count * VertexBufferLayoutElement::GetSizeOfType(element.m_Type);
@@ -42,10 +42,10 @@ void VertexArray::Bind() const
 {
 	//* Binds the VAO (Vertex Array Object) From this point onwards, we can bind/configure the - */
 	//* Corresponding VBO(s) and attribute pointer(s) and then unbind the VAO for later use */
-	glBindVertexArray(m_RendererID);
+	GLCall(glBindVertexArray(m_RendererID));
 }
 
 void VertexArray::UnBind() const
 {
-	glBindVertexArray(0);
+	GLCall(glBindVertexArray(0));
 }

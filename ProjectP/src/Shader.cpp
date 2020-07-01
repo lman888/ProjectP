@@ -1,9 +1,30 @@
 #include "Shader.h"
 
+#define ASSERT(x) if (!(x)) __debugbreak();
+#define GLCall(x) GLClearError();\
+	x;\
+	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
+
+static void GLClearError()
+{
+	while (glGetError() != GL_NO_ERROR);
+}
+
+static bool GLLogCall(const char* a_function, const char* a_file, int a_line)
+{
+	if (GLenum error = glGetError())
+	{
+		std::cout << "[OpenGL Error] (" << error << "): " << a_function <<
+			" " << a_file << ":" << a_line << std::endl;
+		return false;
+	}
+	return true;
+}
+
 Shader::Shader(const char* a_vertexPath, const char* a_fragmentPath)
 {
 	/* Retrieves the Vertex/Fragment source code from the File Path */
-/* Vert Code Path */
+	/* Vert Code Path */
 	std::string vertexCode;
 	/* Frag Code Path */
 	std::string fragmentCode;
@@ -102,17 +123,22 @@ void Shader::UseProgram()
 
 void Shader::SetBool(const std::string& a_name, bool a_value) const
 {
-	glUniform1i(glGetUniformLocation(ID, a_name.c_str()), (int)a_value);
+	GLCall(glUniform1i(glGetUniformLocation(ID, a_name.c_str()), (int)a_value));
 }
 
 void Shader::SetInt(const std::string& a_name, int a_value) const
 {
-	glUniform1i(glGetUniformLocation(ID, a_name.c_str()), a_value);
+	GLCall(glUniform1i(glGetUniformLocation(ID, a_name.c_str()), a_value));
 }
 
 void Shader::SetFloat(const std::string& a_name, float a_value) const
 {
-	glUniform1f(glGetUniformLocation(ID, a_name.c_str()), a_value);
+	GLCall(glUniform1f(glGetUniformLocation(ID, a_name.c_str()), a_value));
+}
+
+void Shader::SetUniformMat4F(const std::string& a_name, const glm::mat4& a_matrix)
+{
+	GLCall(glUniformMatrix4fv(glGetUniformLocation(ID, a_name.c_str()), 1, GL_FALSE, &a_matrix[0][0]));
 }
 
 void Shader::TerminateProgram()

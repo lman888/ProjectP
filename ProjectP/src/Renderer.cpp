@@ -1,5 +1,21 @@
 #include "Renderer.h"
 
+void GLClearError()
+{
+	if (glGetError() != GL_NO_ERROR);
+}
+
+bool GLLogCall(const char* a_function, const char* a_file, int a_line)
+{
+	if (GLenum error = glGetError())
+	{
+		std::cout << "[OpenGL Error] (" << error << "): " << a_function <<
+			" " << a_file << ":" << a_line << std::endl;
+		return false;
+	}
+	return true;
+}
+
 void Renderer::DrawTriangle()
 {
 	///* This function draws primitives using the current active shader */
@@ -68,7 +84,7 @@ void Renderer::GenerateTriangle()
 
 void Renderer::Terminate()
 {
-	///* Deletes/de-allocates all resources once they've outlived their purpose */
+	/* Deletes/de-allocates all resources once they've outlived their purpose */
 	//glDeleteVertexArrays(1, &VAO);
 	//glDeleteBuffers(1, &VBO);
 	//glDeleteBuffers(1, &IBO);

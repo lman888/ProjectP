@@ -45,6 +45,8 @@ int Application::StartUp(void)
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
+
+	std::cout << glGetString(GL_VERSION) << std::endl;
 }
 
 int Application::Update()
@@ -74,15 +76,23 @@ int Application::Update()
 	/* Specifies what data will go into the Vertex Array */
 	m_Layout.Push<float>(2);
 	m_Layout.Push<float>(2);
+
 	/* Adds the Vertex Buffer to the Vertex Array */
 	VA.AddBuffer(VB, m_Layout);
 
 	/* INDEX BUFFER BINDING */
 	IndexBuffer IB(m_indices, 6);
 
+	/* Maps all our Coords on a 2D plane */
+	glm::mat4 m_OrthoProj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+
 	/* Pass in the Shader Files */
 	Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
 
+	/* Binds the Shader */
+	m_shader.UseProgram();
+
+	/* Texture Location */
 	Texture m_texture("Textures/Future City.png");
 
 	/* Binds the Texture */
@@ -92,9 +102,11 @@ int Application::Update()
 	/* Must Match what slot the Texture was bound to */
 	m_shader.SetInt("u_Texture", 0);
 
+	m_shader.SetUniformMat4F("u_MVP", m_OrthoProj);
+
 	VA.UnBind();
-	VB.Unbind();
-	IB.Unbind();
+	VB.UnBind();
+	IB.UnBind();
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -108,22 +120,25 @@ int Application::Update()
 		/* When we call glClear, the entire colour buffer will be filled with the colour as configured by glClearColor */
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		/* Uses Shader Program/Binds the Shader */
-		m_shader.UseProgram();
-
 		/* Binds the Vertex Array Buffer (Which also binds the Vertex Buffer Object */
 		VA.Bind();
 		/* Binds our Index Buffer */
 		IB.Bind();
 
 		/* Draws the Shape we defined with our Buffers */
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+
+		/* Draws Triagnles in WireFrame Mode */
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		/* Sets the Triangles to its default look */
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		/* Poll for Events */
 		glfwPollEvents();
 		/* Swap the front and back buffers */
 		glfwSwapBuffers(m_window);
 	}
+
 
 	/* Terminates the Application */
 	glfwTerminate();
