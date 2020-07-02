@@ -11,10 +11,9 @@ int main()
 	{
 		m_application->Update();
 	}
-	else
-	{
-		m_application->Terminate();
-	}
+
+	m_application->Terminate();
+	
 
 	return 0;
 }

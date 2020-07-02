@@ -90,7 +90,7 @@ int Application::Update()
 	Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
 
 	/* Binds the Shader */
-	m_shader.UseProgram();
+	m_shader.Bind();
 
 	/* Texture Location */
 	Texture m_texture("Textures/Future City.png");
@@ -133,24 +133,19 @@ int Application::Update()
 		/* Sets the Triangles to its default look */
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		/* Poll for Events */
-		glfwPollEvents();
 		/* Swap the front and back buffers */
 		glfwSwapBuffers(m_window);
+		/* Poll for Events */
+		glfwPollEvents();
 	}
 
-
 	/* Terminates the Application */
-	glfwTerminate();
 	return 0;
 }
 
-/* Terminates Program */
-int Application::Terminate()
+void Application::Terminate()
 {
-	m_renderer.Terminate();
 	glfwTerminate();
-	return 0;
 }
 
 /* Resize Window Callback Function*/

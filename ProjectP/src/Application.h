@@ -25,7 +25,7 @@ public:
 
 	int Update();
 
-	int Terminate();
+	void Terminate();
 
 protected:
 
@@ -34,8 +34,5 @@ private:
 
 	/* Calls the GLFW Window */
 	GLFWwindow* m_window = NULL;
-
-	/* Calls the Renderer */
-	Renderer m_renderer;
 
 };

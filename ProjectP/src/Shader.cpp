@@ -1,26 +1,5 @@
 #include "Shader.h"
 
-#define ASSERT(x) if (!(x)) __debugbreak();
-#define GLCall(x) GLClearError();\
-	x;\
-	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-
-static void GLClearError()
-{
-	while (glGetError() != GL_NO_ERROR);
-}
-
-static bool GLLogCall(const char* a_function, const char* a_file, int a_line)
-{
-	if (GLenum error = glGetError())
-	{
-		std::cout << "[OpenGL Error] (" << error << "): " << a_function <<
-			" " << a_file << ":" << a_line << std::endl;
-		return false;
-	}
-	return true;
-}
-
 Shader::Shader(const char* a_vertexPath, const char* a_fragmentPath)
 {
 	/* Retrieves the Vertex/Fragment source code from the File Path */
@@ -115,10 +94,16 @@ Shader::~Shader()
 
 }
 
-void Shader::UseProgram()
+void Shader::Bind()
 {
 	/* Uses the assigned Shader Program */
-	glUseProgram(ID);
+	GLCall(glUseProgram(ID));
+}
+
+void Shader::UnBind()
+{
+	/* Unbinds the currently bound shader */
+	GLCall(glUseProgram(0));
 }
 
 void Shader::SetBool(const std::string& a_name, bool a_value) const
@@ -138,10 +123,36 @@ void Shader::SetFloat(const std::string& a_name, float a_value) const
 
 void Shader::SetUniformMat4F(const std::string& a_name, const glm::mat4& a_matrix)
 {
-	GLCall(glUniformMatrix4fv(glGetUniformLocation(ID, a_name.c_str()), 1, GL_FALSE, &a_matrix[0][0]));
+	GLCall(glUniformMatrix4fv(GetUniformLocation(a_name), 1, GL_FALSE, &a_matrix[0][0]));
+}
+
+void Shader::SetUniform4f(const std::string& a_name, float v0, float v1, float v2, float v3)
+{
+	GLCall(glUniform4f(GetUniformLocation(a_name), v0, v1, v2, v3));
 }
 
 void Shader::TerminateProgram()
 {
 	glDeleteProgram(ID);
+}
+
+int Shader::GetUniformLocation(const std::string& a_name)
+{
+	/* Checks if we already have the Uniform Name listed */
+	if (m_UniformLocationCache.find(a_name) != m_UniformLocationCache.end())
+	{
+		return m_UniformLocationCache[a_name];
+	}
+
+	GLCall(int location = glGetUniformLocation(ID, a_name.c_str()));
+
+	if (location == -1)
+	{
+		std::cout << "Warning Uniform: " << a_name << " Doesnt exist" << std::endl;
+	}
+
+	/* Adds the Uniform Location to the list */
+	m_UniformLocationCache[a_name] = location;
+
+	return location;
 }
