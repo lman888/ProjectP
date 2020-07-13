@@ -1,5 +1,7 @@
 #include "Shader.h"
 
+#include "Renderer.h"
+
 Shader::Shader(const char* a_vertexPath, const char* a_fragmentPath)
 {
 	/* Retrieves the Vertex/Fragment source code from the File Path */
@@ -91,34 +93,29 @@ Shader::Shader(const char* a_vertexPath, const char* a_fragmentPath)
 
 Shader::~Shader()
 {
-
+	GLCall(glDeleteProgram(ID));
 }
 
-void Shader::Bind()
+void Shader::Bind() const
 {
 	/* Uses the assigned Shader Program */
 	GLCall(glUseProgram(ID));
 }
 
-void Shader::UnBind()
+void Shader::UnBind() const
 {
 	/* Unbinds the currently bound shader */
 	GLCall(glUseProgram(0));
 }
 
-void Shader::SetBool(const std::string& a_name, bool a_value) const
+void Shader::SetUniform1f(const std::string& a_name, float a_value)
 {
-	GLCall(glUniform1i(glGetUniformLocation(ID, a_name.c_str()), (int)a_value));
+	GLCall(glUniform1f(GetUniformLocation(a_name), a_value));
 }
 
-void Shader::SetInt(const std::string& a_name, int a_value) const
+void Shader::SetUniform1i(const std::string& a_name, int a_value)
 {
-	GLCall(glUniform1i(glGetUniformLocation(ID, a_name.c_str()), a_value));
-}
-
-void Shader::SetFloat(const std::string& a_name, float a_value) const
-{
-	GLCall(glUniform1f(glGetUniformLocation(ID, a_name.c_str()), a_value));
+	GLCall(glUniform1i(GetUniformLocation(a_name), a_value));
 }
 
 void Shader::SetUniformMat4F(const std::string& a_name, const glm::mat4& a_matrix)

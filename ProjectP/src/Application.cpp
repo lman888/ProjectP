@@ -5,16 +5,16 @@ void FramBufferSizeCallBack(GLFWwindow* a_window, int a_width, int a_height);
 void ProcessInput(GLFWwindow* a_window);
 
 /* Window Settings */
-const unsigned int SCR_HEIGHT = 600;
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 540;
+const unsigned int SCR_WIDTH = 960;
 
 int Application::StartUp(void)
 {
 
 	/* Initializes and Configures GLFW */
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_ANY_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	if (!glfwInit())
@@ -46,6 +46,7 @@ int Application::StartUp(void)
 		return -1;
 	}
 
+	/* Version of OpenGL */
 	std::cout << glGetString(GL_VERSION) << std::endl;
 }
 
@@ -54,11 +55,11 @@ int Application::Update()
 	/* Vertex Positions */
 	float m_vertices[4 * 4] =
 	{
-		//Position     //Texture Coords
-	   -0.5f, -0.5f,   0.0f, 0.0f, // 0 - Bottom Left
-	    0.5f, -0.5f,   1.0f, 0.0f, // 1 - Right Side
-	    0.5f,  0.5f,   1.0f, 1.0f, // 2 - Top Right
-	   -0.5f,  0.5f,   0.0f, 1.0f  // 3 - Left Side
+		//Position       //Texture Coords
+	    100.0f, 100.0f,  0.0f, 0.0f, // 0 - Bottom Left
+	    200.0f, 100.0f,  1.0f, 0.0f, // 1 - Right Side
+	    200.0f, 200.0f,  1.0f, 1.0f, // 2 - Top Right
+	    100.0f, 200.0f,  0.0f, 1.0f  // 3 - Left Side
 	};
 
 	unsigned int m_indices[2 * 3] =
@@ -83,8 +84,17 @@ int Application::Update()
 	/* INDEX BUFFER BINDING */
 	IndexBuffer IB(m_indices, 6);
 
-	/* Maps all our Coords on a 2D plane */
-	glm::mat4 m_OrthoProj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Far, Near) */
+	glm::mat4 m_proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+	/* View Matrix */
+	glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
+	/* Model Matrix */
+	glm::mat4 m_model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0));
+
+	/* Model View Projection Calculation */
+	/* (In OpenGL its Projection View Model) */
+	glm::mat4 m_mvp = m_proj * m_view * m_model;
+
 
 	/* Pass in the Shader Files */
 	Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
@@ -100,13 +110,28 @@ int Application::Update()
 	m_texture.Bind();
 	/* Sets the Uniform of Texture at Slot 0 */
 	/* Must Match what slot the Texture was bound to */
-	m_shader.SetInt("u_Texture", 0);
+	m_shader.SetUniform1i("u_Texture", 0);
 
-	m_shader.SetUniformMat4F("u_MVP", m_OrthoProj);
+	/* Sets the Objects Projection */
+	m_shader.SetUniformMat4F("u_MVP", m_mvp);
 
 	VA.UnBind();
 	VB.UnBind();
 	IB.UnBind();
+
+	/* IMGUI Setup */
+	//ImGui::CreateContext();
+	///* Setup Dear ImGui Style */
+	//ImGui::StyleColorsDark();
+	///* Setup Platform/Render bindings */
+	//ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+
+	/* ImGui States */
+	bool show_demo_window = true;
+	bool show_another_window = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	Renderer m_renderer;
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -120,24 +145,62 @@ int Application::Update()
 		/* When we call glClear, the entire colour buffer will be filled with the colour as configured by glClearColor */
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		/* Starts the Dear ImGui Frame */
+		//ImGui_ImplOpenGL3_NewFrame();
+		//ImGui_ImplGlfw_NewFrame();
+		//ImGui::NewFrame();
+
+		m_renderer.Draw(VA, IB, m_shader);
+
 		/* Binds the Vertex Array Buffer (Which also binds the Vertex Buffer Object */
 		VA.Bind();
 		/* Binds our Index Buffer */
 		IB.Bind();
 
-		/* Draws the Shape we defined with our Buffers */
-		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0));
+		/* ImGui Window Render */
+		//if (show_demo_window)
+		//	ImGui::ShowDemoWindow(&show_demo_window);
+		//{
+		//	static float f = 0.0f;
+		//	static int counter = 0;
 
-		/* Draws Triagnles in WireFrame Mode */
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		/* Sets the Triangles to its default look */
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		//	/* Create a window and append into it */
+		//	ImGui::Begin("Project P");
+		//	/* Display some text */
+		//	ImGui::Text("Fun Big Project");
+		//	/* Edit bools storing out window open/close state */
+		//	ImGui::Checkbox("Demo Window", &show_demo_window);
+		//	ImGui::Checkbox("Another Window", &show_another_window);
+
+		//	/* Edit 1 float using a slider from 0.0f to 1.0f */
+		//	ImGui::SliderFloat("Float", &f, 0.0f, 1.0f);
+		//	/* Edit 3 floats representing a color */
+		//	ImGui::ColorEdit3("Clear Color", (float*)&clear_color);
+
+		//	/* Buttons return true when clicked (most widgets return true when edited/activated) */
+		//	if (ImGui::Button("Button"))
+		//	{
+		//		counter++;
+		//	}
+		//	ImGui::SameLine();
+		//	ImGui::Text("Counter = %d", counter);
+
+
+		//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		//	ImGui::End();
+		//}
+
+		//ImGui::Render();
+		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		/* Swap the front and back buffers */
 		glfwSwapBuffers(m_window);
 		/* Poll for Events */
 		glfwPollEvents();
 	}
+
+	//ImGui_ImplGlfw_Shutdown();
+	//ImGui::DestroyContext();
 
 	/* Terminates the Application */
 	return 0;

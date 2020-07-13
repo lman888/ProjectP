@@ -1,7 +1,8 @@
 #pragma once
 
 #include "VertexBuffer.h"
-#include "VertexBufferLayout.h"
+
+class VertexBufferLayout;
 
 /* Vertex Arrays are a way to bind Vertex Buffers with a certain specifications for the layout of the buffer */
 class VertexArray

@@ -2,7 +2,6 @@
 
 #include "GLAD/glad.h" /* OpenGL Headers */
 #include "glm/glm.hpp" /* Math Headers */
-#include "Renderer.h"
 
 
 #include <string>
@@ -22,13 +21,12 @@ public:
 	~Shader();
 
 	/* Use/Activate the Shader */
-	void Bind();
-	void UnBind();
+	void Bind() const;
+	void UnBind() const;
 
 	/* Set Uniform Functions */
-	void SetBool(const std::string &a_name, bool a_value) const;
-	void SetInt(const std::string &a_name, int a_value) const;
-	void SetFloat(const std::string &a_name, float a_value) const;
+	void SetUniform1f(const std::string &a_name, float a_value);
+	void SetUniform1i(const std::string& a_name, int a_value);
 	void SetUniformMat4F(const std::string& a_name, const glm::mat4& a_matrix);
 	void SetUniform4f(const std::string& a_name, float v0, float v1, float v2, float v3);
 
@@ -43,9 +41,10 @@ private:
 	/* The Shader Program ID */
 	unsigned int ID;
 
-	/* Gets the Uniforms Location */
+	/* Gets the Uniforms Name */
 	int GetUniformLocation(const std::string& a_name);
 
+	/* Holds the Uniforms Cache Location */
 	std::unordered_map<std::string, int> m_UniformLocationCache;
 
 };
