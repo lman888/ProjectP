@@ -236,9 +236,6 @@
     <Image Include="Textures\WallPaper.jpg" />
     <Image Include="Textures\WallPaper2.jpg" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="src\Extra\imgui\imgui.ini" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

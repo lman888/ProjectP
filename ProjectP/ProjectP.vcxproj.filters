@@ -227,7 +227,4 @@
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="src\Extra\imgui\imgui.ini" />
-  </ItemGroup>
 </Project>

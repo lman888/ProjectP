@@ -17,5 +17,7 @@ bool GLLogCall(const char* a_function, const char* a_file, int a_line);
 class Renderer
 {
 public:
+
+	void Clear() const;
 	void Draw(const VertexArray& a_va, const IndexBuffer& a_ib, const Shader& a_shader) const;
 };

@@ -3,7 +3,6 @@
 #include "GLAD/glad.h" /* OpenGL Headers */
 #include "glm/glm.hpp" /* Math Headers */
 
-
 #include <string>
 #include <fstream>
 #include <sstream>

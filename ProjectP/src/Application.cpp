@@ -1,5 +1,6 @@
 #include "Application.h"
 
+
 void FramBufferSizeCallBack(GLFWwindow* a_window, int a_width, int a_height);
 
 void ProcessInput(GLFWwindow* a_window);
@@ -14,7 +15,7 @@ int Application::StartUp(void)
 	/* Initializes and Configures GLFW */
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 	glfwWindowHint(GLFW_OPENGL_ANY_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	if (!glfwInit())
@@ -89,7 +90,7 @@ int Application::Update()
 	/* View Matrix */
 	glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
 	/* Model Matrix */
-	glm::mat4 m_model = glm::translate(glm::mat4(1.0f), glm::vec3(200, 200, 0));
+	glm::mat4 m_model = glm::translate(glm::mat4(1.0f), glm::vec3(500, 300, 0));
 
 	/* Model View Projection Calculation */
 	/* (In OpenGL its Projection View Model) */
@@ -120,11 +121,15 @@ int Application::Update()
 	IB.UnBind();
 
 	/* IMGUI Setup */
-	//ImGui::CreateContext();
-	///* Setup Dear ImGui Style */
-	//ImGui::StyleColorsDark();
-	///* Setup Platform/Render bindings */
-	//ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+	const char* glsl_version = "#version 130";
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	/* Setup Dear ImGui Style */
+	ImGui::StyleColorsDark();
+	/* Setup Platform/Render bindings */
+	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	/* ImGui States */
 	bool show_demo_window = true;
@@ -139,59 +144,50 @@ int Application::Update()
 		/* Process Inputs */
 		ProcessInput(m_window);
 
-		/* Renders the background colour */
-		glClearColor(0.2, 0.3f, 0.3f, 1.0f);
-
-		/* When we call glClear, the entire colour buffer will be filled with the colour as configured by glClearColor */
-		glClear(GL_COLOR_BUFFER_BIT);
+		m_renderer.Clear();
 
 		/* Starts the Dear ImGui Frame */
-		//ImGui_ImplOpenGL3_NewFrame();
-		//ImGui_ImplGlfw_NewFrame();
-		//ImGui::NewFrame();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 
 		m_renderer.Draw(VA, IB, m_shader);
 
-		/* Binds the Vertex Array Buffer (Which also binds the Vertex Buffer Object */
-		VA.Bind();
-		/* Binds our Index Buffer */
-		IB.Bind();
-
 		/* ImGui Window Render */
-		//if (show_demo_window)
-		//	ImGui::ShowDemoWindow(&show_demo_window);
-		//{
-		//	static float f = 0.0f;
-		//	static int counter = 0;
+		if (show_demo_window)
+			ImGui::ShowDemoWindow(&show_demo_window);
+		{
+			static float f = 0.0f;
+			static int counter = 0;
 
-		//	/* Create a window and append into it */
-		//	ImGui::Begin("Project P");
-		//	/* Display some text */
-		//	ImGui::Text("Fun Big Project");
-		//	/* Edit bools storing out window open/close state */
-		//	ImGui::Checkbox("Demo Window", &show_demo_window);
-		//	ImGui::Checkbox("Another Window", &show_another_window);
+			/* Create a window and append into it */
+			ImGui::Begin("Project P");
+			/* Display some text */
+			ImGui::Text("Fun Big Project");
+			/* Edit bools storing out window open/close state */
+			ImGui::Checkbox("Demo Window", &show_demo_window);
+			ImGui::Checkbox("Another Window", &show_another_window);
 
-		//	/* Edit 1 float using a slider from 0.0f to 1.0f */
-		//	ImGui::SliderFloat("Float", &f, 0.0f, 1.0f);
-		//	/* Edit 3 floats representing a color */
-		//	ImGui::ColorEdit3("Clear Color", (float*)&clear_color);
+			/* Edit 1 float using a slider from 0.0f to 1.0f */
+			ImGui::SliderFloat("Float", &f, 0.0f, 1.0f);
+			/* Edit 3 floats representing a color */
+			ImGui::ColorEdit3("Clear Color", (float*)&clear_color);
 
-		//	/* Buttons return true when clicked (most widgets return true when edited/activated) */
-		//	if (ImGui::Button("Button"))
-		//	{
-		//		counter++;
-		//	}
-		//	ImGui::SameLine();
-		//	ImGui::Text("Counter = %d", counter);
+			/* Buttons return true when clicked (most widgets return true when edited/activated) */
+			if (ImGui::Button("Button"))
+			{
+				counter++;
+			}
+			ImGui::SameLine();
+			ImGui::Text("Counter = %d", counter);
 
 
-		//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		//	ImGui::End();
-		//}
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
 
-		//ImGui::Render();
-		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		/* Swap the front and back buffers */
 		glfwSwapBuffers(m_window);
@@ -199,8 +195,8 @@ int Application::Update()
 		glfwPollEvents();
 	}
 
-	//ImGui_ImplGlfw_Shutdown();
-	//ImGui::DestroyContext();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 	/* Terminates the Application */
 	return 0;
