@@ -90,11 +90,11 @@ int Application::Update()
 	/* View Matrix */
 	glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
 	/* Model Matrix */
-	glm::mat4 m_model = glm::translate(glm::mat4(1.0f), glm::vec3(500, 300, 0));
+	//glm::mat4 m_model = glm::translate(glm::mat4(1.0f), glm::vec3(500, 300, 0));
 
 	/* Model View Projection Calculation */
 	/* (In OpenGL its Projection View Model) */
-	glm::mat4 m_mvp = m_proj * m_view * m_model;
+	//glm::mat4 m_mvp = m_proj * m_view * m_model;
 
 
 	/* Pass in the Shader Files */
@@ -114,7 +114,7 @@ int Application::Update()
 	m_shader.SetUniform1i("u_Texture", 0);
 
 	/* Sets the Objects Projection */
-	m_shader.SetUniformMat4F("u_MVP", m_mvp);
+	//m_shader.SetUniformMat4F("u_MVP", m_mvp);
 
 	VA.UnBind();
 	VB.UnBind();
@@ -132,9 +132,11 @@ int Application::Update()
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	/* ImGui States */
-	bool show_demo_window = true;
-	bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	//bool show_demo_window = true;
+	//bool show_another_window = false;
+	//ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+	glm::vec3 m_translation(500, 300, 0);
 
 	Renderer m_renderer;
 
@@ -151,40 +153,20 @@ int Application::Update()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translation);
+		glm::mat4 m_mvp = m_proj * m_view * m_model;
+		m_shader.SetUniformMat4F("u_MVP", m_mvp);
+
 		m_renderer.Draw(VA, IB, m_shader);
 
 		/* ImGui Window Render */
-		if (show_demo_window)
-			ImGui::ShowDemoWindow(&show_demo_window);
 		{
-			static float f = 0.0f;
-			static int counter = 0;
-
-			/* Create a window and append into it */
-			ImGui::Begin("Project P");
-			/* Display some text */
-			ImGui::Text("Fun Big Project");
-			/* Edit bools storing out window open/close state */
-			ImGui::Checkbox("Demo Window", &show_demo_window);
-			ImGui::Checkbox("Another Window", &show_another_window);
-
-			/* Edit 1 float using a slider from 0.0f to 1.0f */
-			ImGui::SliderFloat("Float", &f, 0.0f, 1.0f);
-			/* Edit 3 floats representing a color */
-			ImGui::ColorEdit3("Clear Color", (float*)&clear_color);
-
-			/* Buttons return true when clicked (most widgets return true when edited/activated) */
-			if (ImGui::Button("Button"))
-			{
-				counter++;
-			}
-			ImGui::SameLine();
-			ImGui::Text("Counter = %d", counter);
-
-
+			/* Edit 1 float using a slider from 0.0f to 960.0f */
+			ImGui::SliderFloat3("Translation", &m_translation.x, 0.0f, 960.0f);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			ImGui::End();
 		}
+
+
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
