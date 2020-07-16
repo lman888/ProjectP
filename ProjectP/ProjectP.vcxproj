@@ -162,6 +162,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="Dependencies\GLAD\src\glad.c" />
     <ClCompile Include="src\Extra\imgui\imgui.cpp" />
     <ClCompile Include="src\Extra\imgui\imgui_demo.cpp" />
@@ -180,6 +181,7 @@
     <ClCompile Include="src\VertexArray.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Camera.h" />
     <ClInclude Include="Dependencies\GLM\glm\common.hpp" />
     <ClInclude Include="Dependencies\GLM\glm\exponential.hpp" />
     <ClInclude Include="Dependencies\GLM\glm\ext.hpp" />
