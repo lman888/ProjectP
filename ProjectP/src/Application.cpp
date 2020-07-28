@@ -14,8 +14,8 @@ int Application::StartUp(void)
 
 	/* Initializes and Configures GLFW */
 	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_OPENGL_ANY_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	if (!glfwInit())
@@ -57,10 +57,10 @@ int Application::Update()
 	float m_vertices[4 * 4] =
 	{
 		//Position       //Texture Coords
-	    100.0f, 100.0f,  0.0f, 0.0f, // 0 - Bottom Left
-	    200.0f, 100.0f,  1.0f, 0.0f, // 1 - Right Side
-	    200.0f, 200.0f,  1.0f, 1.0f, // 2 - Top Right
-	    100.0f, 200.0f,  0.0f, 1.0f  // 3 - Left Side
+	   -50.0f, -50.0f,  0.0f, 0.0f, // 0 - Bottom Left
+		50.0f, -50.0f,  1.0f, 0.0f, // 1 - Right Side
+		50.0f,  50.0f,  1.0f, 1.0f, // 2 - Top Right
+	   -50.0f,  50.0f,  0.0f, 1.0f  // 3 - Left Side
 	};
 
 	unsigned int m_indices[2 * 3] =
@@ -88,14 +88,7 @@ int Application::Update()
 	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Far, Near) */
 	glm::mat4 m_proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
 	/* View Matrix */
-	glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));
-	/* Model Matrix */
-	//glm::mat4 m_model = glm::translate(glm::mat4(1.0f), glm::vec3(500, 300, 0));
-
-	/* Model View Projection Calculation */
-	/* (In OpenGL its Projection View Model) */
-	//glm::mat4 m_mvp = m_proj * m_view * m_model;
-
+	glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 
 	/* Pass in the Shader Files */
 	Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
@@ -113,15 +106,12 @@ int Application::Update()
 	/* Must Match what slot the Texture was bound to */
 	m_shader.SetUniform1i("u_Texture", 0);
 
-	/* Sets the Objects Projection */
-	//m_shader.SetUniformMat4F("u_MVP", m_mvp);
-
 	VA.UnBind();
 	VB.UnBind();
 	IB.UnBind();
 
 	/* IMGUI Setup */
-	const char* glsl_version = "#version 130";
+	const char* glsl_version = "#version 450";
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -131,12 +121,9 @@ int Application::Update()
 	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
-	/* ImGui States */
-	//bool show_demo_window = true;
-	//bool show_another_window = false;
-	//ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-	glm::vec3 m_translation(500, 300, 0);
+	/* Objects Initial Position */
+	glm::vec3 m_translationA(200, 200, 0);
+	glm::vec3 m_translationB(500, 0200, 0);
 
 	Renderer m_renderer;
 
@@ -153,16 +140,31 @@ int Application::Update()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translation);
-		glm::mat4 m_mvp = m_proj * m_view * m_model;
-		m_shader.SetUniformMat4F("u_MVP", m_mvp);
-
-		m_renderer.Draw(VA, IB, m_shader);
+		/* Renders Two objects (Exact same object) */
+		{
+			/* Model Matrix */
+			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationA);
+			/* Model View Projection Calculation */
+			/* (In OpenGL its Projection View Model) */
+			glm::mat4 m_mvp = m_proj * m_view * m_model;
+			m_shader.SetUniformMat4F("u_MVP", m_mvp);
+			m_renderer.Draw(VA, IB, m_shader);
+		}
+		{
+			/* Model Matrix */
+			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationB);
+			/* Model View Projection Calculation */
+			/* (In OpenGL its Projection View Model) */
+			glm::mat4 m_mvp = m_proj * m_view * m_model;
+			m_shader.SetUniformMat4F("u_MVP", m_mvp);
+			m_renderer.Draw(VA, IB, m_shader);
+		}
 
 		/* ImGui Window Render */
 		{
 			/* Edit 1 float using a slider from 0.0f to 960.0f */
-			ImGui::SliderFloat3("Translation", &m_translation.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation A", &m_translationA.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation B", &m_translationB.x, 0.0f, 960.0f);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 

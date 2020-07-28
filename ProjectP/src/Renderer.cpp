@@ -27,16 +27,14 @@ void Renderer::Clear() const
 
 void Renderer::Draw(const VertexArray& a_va, const IndexBuffer& a_ib, const Shader& a_shader) const
 {
+	/* Binds the Shader Program to the GPU */
 	a_shader.Bind();
-	/* Binds the Vertex Array Buffer (Which also binds the Vertex Buffer Object */
+	/* Binds the Vertex Array Buffer (This contains all of the Vertex Buffers data) */
 	a_va.Bind();
-	/* Binds our Index Buffer */
+	/* Binds our Index Buffer (contains the indices that are inside the Vertex Buffer,
+	(chooses which indices we want to render on our screen)) */
 	a_ib.Bind();
 
 	/* Draws the Shape we defined with our Buffers */
 	GLCall(glDrawElements(GL_TRIANGLES, a_ib.GetCount(), GL_UNSIGNED_INT, 0));
-	/* Draws Triagnles in WireFrame Mode */
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	/* Sets the Triangles to its default look */
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
