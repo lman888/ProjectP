@@ -1,3 +1,6 @@
 ﻿  Application.cpp
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(52): warning C4715: 'Application::StartUp': not all control paths return a value
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(169,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  Main.cpp
+  Generating Code...
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(73): warning C4715: 'Application::StartUp': not all control paths return a value
   ProjectP.vcxproj -> C:\Users\Liam\Documents\Development\ProjectP\bin\x64\Debug\ProjectP.exe
