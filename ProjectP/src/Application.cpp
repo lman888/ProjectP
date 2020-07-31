@@ -84,30 +84,79 @@ int Application::Update()
 	   -50.0f,  50.0f,  0.0f, 1.0f  // 3 - Left Side
 	};
 
-	unsigned int m_indices[2 * 3] =
+	float vertices[24 * 5] = {
+		-50.0f, -50.0f, -50.0f,  0.0f, 0.0f, // 0
+		 50.0f, -50.0f, -50.0f,  1.0f, 0.0f, // 1
+		 50.0f,  50.0f, -50.0f,  1.0f, 1.0f, // 2
+		-50.0f,  50.0f, -50.0f,  0.0f, 1.0f, // 3
+
+		-50.0f, -50.0f,  50.0f,  0.0f, 0.0f, // 4
+		 50.0f, -50.0f,  50.0f,  1.0f, 0.0f, // 5
+		 50.0f,  50.0f,  50.0f,  1.0f, 1.0f, // 6
+		-50.0f,  50.0f,  50.0f,  0.0f, 1.0f, // 7
+
+		-50.0f,  50.0f,  50.0f,  1.0f, 0.0f, // 8
+		-50.0f,  50.0f, -50.0f,  1.0f, 1.0f, // 9
+		-50.0f, -50.0f, -50.0f,  0.0f, 1.0f, // 10
+		-50.0f, -50.0f,  50.0f,  0.0f, 0.0f, // 11
+
+		 50.0f,  50.0f,  50.0f,  1.0f, 0.0f, // 12
+		 50.0f,  50.0f, -50.0f,  1.0f, 1.0f, // 13
+		 50.0f, -50.0f, -50.0f,  0.0f, 1.0f, // 14
+		 50.0f, -50.0f,  50.0f,  0.0f, 0.0f, // 15
+
+		-50.0f, -50.0f, -50.0f,  0.0f, 1.0f, // 16
+		 50.0f, -50.0f, -50.0f,  1.0f, 1.0f, // 17
+		 50.0f, -50.0f,  50.0f,  1.0f, 0.0f, // 18
+		-50.0f, -50.0f,  50.0f,  0.0f, 0.0f, // 19
+
+		-50.0f,  50.0f, -50.0f,  0.0f, 1.0f, // 20
+		 50.0f,  50.0f, -50.0f,  1.0f, 1.0f, // 21
+		 50.0f,  50.0f,  50.0f,  1.0f, 0.0f, // 22
+		-50.0f,  50.0f,  50.0f,  0.0f, 0.0f, // 23
+	};
+
+	unsigned int m_indices[12 * 3] =
 	{
 		0, 1, 2, //First Triangle
-		2, 3, 0  //Second Triangle
+		2, 3, 0, //Second Triangle
+
+		4, 5, 6, //First Triangle
+		6, 7, 4, //Second Triangle
+
+		8, 9, 10,
+		10, 11, 8,
+
+		12, 13, 14,
+		14, 15, 12,
+
+		16, 17, 18,
+		18, 19, 16,
+
+		20, 21, 22,
+		22, 23, 20
 	};
 
 	VertexArray VA;
 	/* VERTEX BUFFER BINDING */
 	/* Creates a Vertex Buffer and specifies the size */
-	VertexBuffer VB(m_vertices, 4 * 4 * sizeof(float));
+	VertexBuffer VB(vertices, 24 * 5 * sizeof(float));
 
 	VertexBufferLayout m_Layout;
 	/* Specifies what data will go into the Vertex Array */
-	m_Layout.Push<float>(2);
+	m_Layout.Push<float>(3);
 	m_Layout.Push<float>(2);
 
 	/* Adds the Vertex Buffer to the Vertex Array */
 	VA.AddBuffer(VB, m_Layout);
 
 	/* INDEX BUFFER BINDING */
-	IndexBuffer IB(m_indices, 6);
+	IndexBuffer IB(m_indices, 36);
 
-	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Far, Near) */
-	glm::mat4 m_proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Top, Far, Near) */
+	glm::mat4 m_proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 500.0f);
+
+	glm::mat4 m_persProj = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 300.0f);
 	/* View Matrix */
 	//glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 
@@ -128,10 +177,6 @@ int Application::Update()
 	/* Binds to Texture Slot 1 */
 	m_textuerTwo.Bind(1);
 
-	/* Sets the Uniform of Texture at Slot 0 */
-	/* Must Match what slot the Texture was bound to */
-	//m_shader.SetUniform1i("u_Texture", 1);
-
 	VA.UnBind();
 	VB.UnBind();
 	IB.UnBind();
@@ -149,7 +194,7 @@ int Application::Update()
 
 	/* Objects Initial Position */
 	glm::vec3 m_translationA(200, 200, 0);
-	glm::vec3 m_translationB(500, 0200, 0);
+	glm::vec3 m_translationB(500, 200, 0);
 
 	Renderer m_renderer;
 
@@ -160,6 +205,10 @@ int Application::Update()
 		ProcessInput(m_window);
 
 		m_renderer.Clear();
+
+		GLCall(glEnable(GL_DEPTH_TEST));
+
+		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		/* Starts the Dear ImGui Frame */
 		ImGui_ImplOpenGL3_NewFrame();
@@ -176,6 +225,7 @@ int Application::Update()
 		{
 			/* Model Matrix */
 			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationA);
+			m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
 			glm::mat4 m_mvp = m_proj * m_view * m_model;

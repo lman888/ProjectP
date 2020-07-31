@@ -37,7 +37,7 @@ public:
 		static_assert(false);
 	}
 
-	/* Maintains the ELements that make up our Vertex Buffer */
+	/* Maintains the Elements that make up our Vertex Buffer */
 	template<>
 	void Push<float>(unsigned int a_count)
 	{
