@@ -42,17 +42,4 @@ protected:
 
 
 private:
-
-	/* Calls the GLFW Window */
-	GLFWwindow* m_window = NULL;
-
-	/* Camera Starting Position */
-	glm::vec3 m_cameraPosition = glm::vec3(0.0f, 0.0f, 0.3f);
-	glm::vec3 m_cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-	glm::vec3 m_cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-	glm::mat4 m_view;
-
-	float m_cameraSpeed;
-	float m_cameraSpeedValue;
 };

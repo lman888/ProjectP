@@ -5,9 +5,39 @@ void FramBufferSizeCallBack(GLFWwindow* a_window, int a_width, int a_height);
 
 void ProcessInput(GLFWwindow* a_window);
 
+void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos);
+
+void MouseScrollCallback(GLFWwindow* window, double a_XoffSet, double a_yOffSet);
+
+/* Calls the GLFW Window */
+GLFWwindow* m_window = NULL;
+
 /* Window Settings */
 const unsigned int SCR_HEIGHT = 600;
 const unsigned int SCR_WIDTH = 1000;
+
+
+/* Camera Starting Position */
+glm::vec3 m_cameraPosition = glm::vec3(0.0f, 0.0f, 0.3f);
+glm::vec3 m_cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 m_cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+glm::mat4 m_view;
+
+float m_cameraSpeed;
+float m_cameraSpeedValue;
+
+/* Initialize Mouse Pointer to be roughly Centre of the screen */
+float m_lastX = 500, m_lastY = 300;
+
+/* Pitch and Yaw values */
+float m_yaw, m_pitch;
+
+float fov = 45.0f;
+
+bool firstMouse = true;
+
+float m_sensitivity = 0.01f;
 
 /* Time between current frame and last frame */
 float m_deltaTime = 0.0f;
@@ -45,6 +75,8 @@ int Application::StartUp(void)
 
 	/* Checks if the Window has been resized */
 	glfwSetFramebufferSizeCallback(m_window, FramBufferSizeCallBack);
+	glfwSetScrollCallback(m_window, MouseScrollCallback);
+	glfwSetCursorPosCallback(m_window, MouseCallback);
 
 	/* Checks if GLAD was loaded correctly */
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -143,6 +175,7 @@ int Application::Update()
 	VertexBuffer VB(vertices, 24 * 5 * sizeof(float));
 
 	VertexBufferLayout m_Layout;
+
 	/* Specifies what data will go into the Vertex Array */
 	m_Layout.Push<float>(3);
 	m_Layout.Push<float>(2);
@@ -151,12 +184,12 @@ int Application::Update()
 	VA.AddBuffer(VB, m_Layout);
 
 	/* INDEX BUFFER BINDING */
-	IndexBuffer IB(m_indices, 36);
+	IndexBuffer IB(m_indices, 12 * 3);
 
 	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Top, Far, Near) */
-	glm::mat4 m_proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 500.0f);
+	glm::mat4 m_proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -90.0f, 500.0f);
 
-	glm::mat4 m_persProj = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 300.0f);
+	glm::mat4 m_persProj = glm::perspective(glm::radians(fov), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 1000.0f);
 	/* View Matrix */
 	//glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 
@@ -206,10 +239,6 @@ int Application::Update()
 
 		m_renderer.Clear();
 
-		GLCall(glEnable(GL_DEPTH_TEST));
-
-		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
 		/* Starts the Dear ImGui Frame */
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -218,8 +247,16 @@ int Application::Update()
 		float m_currentFrame = glfwGetTime();
 		m_deltaTime = m_currentFrame - m_lastFrame;
 		m_lastFrame = m_currentFrame;
-
+		
 		CameraInputs(m_window);
+
+		//if (glfwGetMouseButton(m_window, 1) == GLFW_PRESS)
+		//{
+		//	/* OpenGL Hides and Captures the Curesor */
+		//	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+		//	glfwSetCursorPosCallback(m_window, MouseCallback);
+		//}
 
 		/* Renders Two objects (Exact same object) */
 		{
@@ -228,7 +265,7 @@ int Application::Update()
 			m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
-			glm::mat4 m_mvp = m_proj * m_view * m_model;
+			glm::mat4 m_mvp = m_persProj * m_view * m_model;
 			m_shader.SetUniform1i("u_Texture", 0);
 			m_shader.SetUniformMat4F("u_MVP", m_mvp);
 			m_renderer.Draw(VA, IB, m_shader);
@@ -238,7 +275,7 @@ int Application::Update()
 			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationB);
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
-			glm::mat4 m_mvp = m_proj * m_view * m_model;
+			glm::mat4 m_mvp = m_persProj * m_view * m_model;
 			m_shader.SetUniform1i("u_Texture", 1);
 			m_shader.SetUniformMat4F("u_MVP", m_mvp);
 			m_renderer.Draw(VA, IB, m_shader);
@@ -250,6 +287,7 @@ int Application::Update()
 			ImGui::SliderFloat3("Translation A", &m_translationA.x, 0.0f, 960.0f);
 			ImGui::SliderFloat3("Translation B", &m_translationB.x, 0.0f, 960.0f);
 			ImGui::SliderFloat("Camera Speed", &m_cameraSpeedValue, 0.0f, 500.0f);
+			ImGui::SliderFloat("Camera Sensitivity", &m_sensitivity, 0.01f, 1.0f);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 
@@ -304,4 +342,58 @@ void ProcessInput(GLFWwindow* a_window)
 	{
 		glfwSetWindowShouldClose(a_window, true);
 	}
+}
+
+void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos)
+{
+	/* Will find better solution but its to stop the weird jerk at the start */
+	if (firstMouse)
+	{
+		m_lastX = a_xpos;
+		m_lastY = a_ypos;
+
+		firstMouse = false;
+	}
+
+	if (glfwGetMouseButton(m_window, 1) == GLFW_PRESS)
+	{
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+		/* Calculate the OffSet Movement between the last and current frame */
+		float m_xOffSet = a_xpos - m_lastX;
+		float m_yOffSet = m_lastY - a_ypos; // Reversed since Y-Coordinates range from bottom to top
+		m_lastX = a_xpos;
+		m_lastY = a_ypos;
+
+		/* Calculates Mouse Sensitivity */
+		m_xOffSet *= m_sensitivity;
+		m_yOffSet *= m_sensitivity;
+
+		/* Add the Offset Values */
+		m_yaw += m_xOffSet;
+		m_pitch += m_yOffSet;
+
+		/* Pitch Constraints */
+		if (m_pitch > 89.0f)
+			m_pitch = 89.0f;
+		if (m_pitch < -89.0f)
+			m_pitch = -89.0f;
+
+		/* Calculates the Direction Vector */
+		glm::vec3 m_direction;
+		m_direction.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+		m_direction.y = sin(glm::radians(m_pitch));
+		m_direction.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+		m_cameraFront = glm::normalize(m_direction);
+	}
+}
+
+void MouseScrollCallback(GLFWwindow* window, double a_XoffSet, double a_yOffSet)
+{
+	fov -= (float)a_yOffSet;
+
+	if (fov < 1.0f);
+		fov = 1.0f;
+	if (fov > 45.0f)
+		fov = 45.0f;
 }

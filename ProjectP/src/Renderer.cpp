@@ -19,10 +19,11 @@ bool GLLogCall(const char* a_function, const char* a_file, int a_line)
 void Renderer::Clear() const
 {
 	/* Renders the background colour */
-	glClearColor(0.2, 0.3f, 0.3f, 1.0f);
+	GLCall(glClearColor(0.2, 0.3f, 0.3f, 1.0f));
 
 	/* When we call glClear, the entire colour buffer will be filled with the colour as configured by glClearColor */
-	glClear(GL_COLOR_BUFFER_BIT);
+	GLCall(glEnable(GL_DEPTH_TEST));
+	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
 void Renderer::Draw(const VertexArray& a_va, const IndexBuffer& a_ib, const Shader& a_shader) const
