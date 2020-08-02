@@ -7,7 +7,7 @@ void ProcessInput(GLFWwindow* a_window);
 
 void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos);
 
-void MouseScrollCallback(GLFWwindow* window, double a_XoffSet, double a_yOffSet);
+void MouseScrollCallback(GLFWwindow* a_window, double a_XoffSet, double a_yOffSet);
 
 /* Calls the GLFW Window */
 GLFWwindow* m_window = NULL;
@@ -75,8 +75,8 @@ int Application::StartUp(void)
 
 	/* Checks if the Window has been resized */
 	glfwSetFramebufferSizeCallback(m_window, FramBufferSizeCallBack);
-	glfwSetScrollCallback(m_window, MouseScrollCallback);
 	glfwSetCursorPosCallback(m_window, MouseCallback);
+	glfwSetScrollCallback(m_window, MouseScrollCallback);
 
 	/* Checks if GLAD was loaded correctly */
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -189,7 +189,7 @@ int Application::Update()
 	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Top, Far, Near) */
 	glm::mat4 m_proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -90.0f, 500.0f);
 
-	glm::mat4 m_persProj = glm::perspective(glm::radians(fov), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 1000.0f);
+	//glm::mat4 m_persProj = glm::perspective(glm::radians(fov), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 1000.0f);
 	/* View Matrix */
 	//glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 
@@ -248,15 +248,9 @@ int Application::Update()
 		m_deltaTime = m_currentFrame - m_lastFrame;
 		m_lastFrame = m_currentFrame;
 		
+		glm::mat4 m_persProj = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+
 		CameraInputs(m_window);
-
-		//if (glfwGetMouseButton(m_window, 1) == GLFW_PRESS)
-		//{
-		//	/* OpenGL Hides and Captures the Curesor */
-		//	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-		//	glfwSetCursorPosCallback(m_window, MouseCallback);
-		//}
 
 		/* Renders Two objects (Exact same object) */
 		{
@@ -298,6 +292,8 @@ int Application::Update()
 		glfwSwapBuffers(m_window);
 		/* Poll for Events */
 		glfwPollEvents();
+		std::cout << fov << std::endl;
+
 	}
 
 	ImGui_ImplGlfw_Shutdown();
@@ -355,15 +351,23 @@ void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos)
 		firstMouse = false;
 	}
 
+	/* Calculate the OffSet Movement between the last and current frame */
+	float m_xOffSet = a_xpos - m_lastX;
+	float m_yOffSet = m_lastY - a_ypos; // Reversed since Y-Coordinates range from bottom to top
+	m_lastX = a_xpos;
+	m_lastY = a_ypos;
+
+
 	if (glfwGetMouseButton(m_window, 1) == GLFW_PRESS)
 	{
 		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-		/* Calculate the OffSet Movement between the last and current frame */
-		float m_xOffSet = a_xpos - m_lastX;
-		float m_yOffSet = m_lastY - a_ypos; // Reversed since Y-Coordinates range from bottom to top
-		m_lastX = a_xpos;
-		m_lastY = a_ypos;
+
+		/* Pitch Constraints */
+		if (m_pitch > 89.0f)
+			m_pitch = 89.0f;
+		if (m_pitch < -89.0f)
+			m_pitch = -89.0f;
 
 		/* Calculates Mouse Sensitivity */
 		m_xOffSet *= m_sensitivity;
@@ -373,12 +377,6 @@ void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos)
 		m_yaw += m_xOffSet;
 		m_pitch += m_yOffSet;
 
-		/* Pitch Constraints */
-		if (m_pitch > 89.0f)
-			m_pitch = 89.0f;
-		if (m_pitch < -89.0f)
-			m_pitch = -89.0f;
-
 		/* Calculates the Direction Vector */
 		glm::vec3 m_direction;
 		m_direction.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
@@ -386,11 +384,16 @@ void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos)
 		m_direction.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
 		m_cameraFront = glm::normalize(m_direction);
 	}
+	else
+	{
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+	glfwGetCursorPos(m_window, &a_xpos, &a_ypos);
 }
 
-void MouseScrollCallback(GLFWwindow* window, double a_XoffSet, double a_yOffSet)
+void MouseScrollCallback(GLFWwindow* a_window, double a_XoffSet, double a_yOffSet)
 {
-	fov -= (float)a_yOffSet;
+	fov += (float)a_yOffSet;
 
 	if (fov < 1.0f);
 		fov = 1.0f;
