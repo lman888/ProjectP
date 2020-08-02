@@ -1,12 +1,8 @@
 #include "Application.h"
 
-
 void FramBufferSizeCallBack(GLFWwindow* a_window, int a_width, int a_height);
-
 void ProcessInput(GLFWwindow* a_window);
-
 void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos);
-
 void MouseScrollCallback(GLFWwindow* a_window, double a_XoffSet, double a_yOffSet);
 
 /* Calls the GLFW Window */
@@ -16,28 +12,17 @@ GLFWwindow* m_window = NULL;
 const unsigned int SCR_HEIGHT = 600;
 const unsigned int SCR_WIDTH = 1000;
 
-
-/* Camera Starting Position */
-glm::vec3 m_cameraPosition = glm::vec3(0.0f, 0.0f, 0.3f);
-glm::vec3 m_cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 m_cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-glm::mat4 m_view;
-
-float m_cameraSpeed;
+/* Camera Variables */
+Camera m_camera;
 float m_cameraSpeedValue;
+bool firstMouse = true;
+float m_sensitivity = 0.01f;
 
 /* Initialize Mouse Pointer to be roughly Centre of the screen */
 float m_lastX = 500, m_lastY = 300;
 
-/* Pitch and Yaw values */
-float m_yaw, m_pitch;
-
+/* Camera's Field of View */
 float fov = 45.0f;
-
-bool firstMouse = true;
-
-float m_sensitivity = 0.01f;
 
 /* Time between current frame and last frame */
 float m_deltaTime = 0.0f;
@@ -106,7 +91,7 @@ int Application::StartUp(void)
 
 int Application::Update()
 {
-	/* Vertex Positions */
+	/* Vertex Positions for Quad */
 	float m_vertices[4 * 4] =
 	{
 		//Position       //Texture Coords
@@ -116,6 +101,7 @@ int Application::Update()
 	   -50.0f,  50.0f,  0.0f, 1.0f  // 3 - Left Side
 	};
 
+	/* Vertex Positions for Cube */
 	float vertices[24 * 5] = {
 		-50.0f, -50.0f, -50.0f,  0.0f, 0.0f, // 0
 		 50.0f, -50.0f, -50.0f,  1.0f, 0.0f, // 1
@@ -226,8 +212,8 @@ int Application::Update()
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	/* Objects Initial Position */
-	glm::vec3 m_translationA(200, 200, 0);
-	glm::vec3 m_translationB(500, 200, 0);
+	glm::vec3 m_translationA(500.0f, 0, 0.0f);
+	glm::vec3 m_translationB(500.0f, 0, 200.0f);
 
 	Renderer m_renderer;
 
@@ -248,9 +234,9 @@ int Application::Update()
 		m_deltaTime = m_currentFrame - m_lastFrame;
 		m_lastFrame = m_currentFrame;
 		
-		glm::mat4 m_persProj = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+		glm::mat4 m_persProj = glm::perspective(glm::radians(m_camera.GetCameraFOV()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
 
-		CameraInputs(m_window);
+		m_camera.CameraInputs(m_window, m_cameraSpeedValue, m_deltaTime);
 
 		/* Renders Two objects (Exact same object) */
 		{
@@ -259,7 +245,7 @@ int Application::Update()
 			m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
-			glm::mat4 m_mvp = m_persProj * m_view * m_model;
+			glm::mat4 m_mvp = m_persProj * m_camera.GetViewMatrix() * m_model;
 			m_shader.SetUniform1i("u_Texture", 0);
 			m_shader.SetUniformMat4F("u_MVP", m_mvp);
 			m_renderer.Draw(VA, IB, m_shader);
@@ -269,7 +255,7 @@ int Application::Update()
 			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationB);
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
-			glm::mat4 m_mvp = m_persProj * m_view * m_model;
+			glm::mat4 m_mvp = m_persProj * m_camera.GetViewMatrix() * m_model;
 			m_shader.SetUniform1i("u_Texture", 1);
 			m_shader.SetUniformMat4F("u_MVP", m_mvp);
 			m_renderer.Draw(VA, IB, m_shader);
@@ -310,17 +296,7 @@ void Application::Terminate()
 
 void Application::CameraInputs(GLFWwindow* a_window)
 {
-	m_view = glm::lookAt(m_cameraPosition, m_cameraPosition + m_cameraFront, m_cameraUp);
 
-	m_cameraSpeed = m_cameraSpeedValue * m_deltaTime;
-	if (glfwGetKey(a_window, GLFW_KEY_W) == GLFW_PRESS)
-		m_cameraPosition += m_cameraSpeed * m_cameraFront;
-	if (glfwGetKey(a_window, GLFW_KEY_S) == GLFW_PRESS)
-		m_cameraPosition -= m_cameraSpeed * m_cameraFront;
-	if (glfwGetKey(a_window, GLFW_KEY_A) == GLFW_PRESS)
-		m_cameraPosition -= glm::normalize(glm::cross(m_cameraFront, m_cameraUp)) * m_cameraSpeed;
-	if (glfwGetKey(a_window, GLFW_KEY_D) == GLFW_PRESS)
-		m_cameraPosition += glm::normalize(glm::cross(m_cameraFront, m_cameraUp)) * m_cameraSpeed;
 }
 
 /* Resize Window Callback Function*/
@@ -357,38 +333,20 @@ void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos)
 	m_lastX = a_xpos;
 	m_lastY = a_ypos;
 
+	/* Calculates Mouse Sensitivity */
+	m_xOffSet *= m_sensitivity;
+	m_yOffSet *= m_sensitivity;
 
 	if (glfwGetMouseButton(m_window, 1) == GLFW_PRESS)
 	{
 		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-
-		/* Pitch Constraints */
-		if (m_pitch > 89.0f)
-			m_pitch = 89.0f;
-		if (m_pitch < -89.0f)
-			m_pitch = -89.0f;
-
-		/* Calculates Mouse Sensitivity */
-		m_xOffSet *= m_sensitivity;
-		m_yOffSet *= m_sensitivity;
-
-		/* Add the Offset Values */
-		m_yaw += m_xOffSet;
-		m_pitch += m_yOffSet;
-
-		/* Calculates the Direction Vector */
-		glm::vec3 m_direction;
-		m_direction.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-		m_direction.y = sin(glm::radians(m_pitch));
-		m_direction.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-		m_cameraFront = glm::normalize(m_direction);
+		m_camera.CameraRotation(m_xOffSet, m_yOffSet);
 	}
 	else
 	{
 		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
-	glfwGetCursorPos(m_window, &a_xpos, &a_ypos);
 }
 
 void MouseScrollCallback(GLFWwindow* a_window, double a_XoffSet, double a_yOffSet)

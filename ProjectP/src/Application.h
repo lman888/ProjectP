@@ -8,6 +8,7 @@
 #include <gl/GL.h>
 #include "GLFW/glfw3.h"
 
+#include "Camera.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "Texture.h"
@@ -42,4 +43,5 @@ protected:
 
 
 private:
+
 };
