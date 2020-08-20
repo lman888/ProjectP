@@ -135,8 +135,9 @@ int Application::Update()
 	glm::vec3 m_translationB(500.0f, 0.0f, 200.0f);
 
 	Renderer m_renderer;
-
 	Geometry m_geometry;
+
+	m_camera.SetProjView(SCR_HEIGHT, SCR_WIDTH);
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -168,7 +169,7 @@ int Application::Update()
 			m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
-			glm::mat4 m_mvp = m_persProj * m_camera.GetViewMatrix() * m_model;
+			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
 			m_colorShader.Bind();
 			//m_shader.SetUniform1i("u_Texture", 0);
 			m_colorShader.SetUniformMat4F("u_MVP", m_mvp);
@@ -181,7 +182,7 @@ int Application::Update()
 			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationB);
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
-			glm::mat4 m_mvp = m_persProj * m_camera.GetViewMatrix() * m_model;
+			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
 			m_shader.Bind();
 			m_shader.SetUniform1i("u_Texture", 1);
 			m_shader.SetUniformMat4F("u_MVP", m_mvp);

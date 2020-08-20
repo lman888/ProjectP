@@ -12,8 +12,10 @@ public:
 	/* Initialises the Cameras Variables */
 	Camera() : m_cameraPosition(-10.0f, 0.0f, 0.3f), m_cameraFront(1.0f, 0.0f, 0.10f),
 			   m_cameraUp(0.0f, 1.0f, 0.0f), m_cameraSpeed(10.0f),
-			   m_pitch(0.0f), m_yaw(0.0f), 
-			   m_view(0.0f), m_fov(45.0f){};
+			   m_pitch(0.0f), m_yaw(0.0f),
+			   m_view(0.0f), m_fov(45.0f),
+			   m_scrHeight(0), m_scrWidth(0),
+			   m_persProjView(0.0f) {};
 
 	~Camera() {};
 
@@ -64,6 +66,12 @@ public:
 			m_fov = 45.0f;
 	}
 
+	void SetProjView(unsigned int a_height, unsigned int a_width)
+	{
+		m_scrHeight = a_height;
+		m_scrWidth = a_width;
+	}
+
 	float GetCameraFOV()
 	{
 		return m_fov;
@@ -73,6 +81,11 @@ public:
 	glm::mat4 GetViewMatrix()
 	{
 		return m_view;
+	}
+
+	glm::mat4 GetProjView()
+	{
+		return m_persProjView = glm::perspective(glm::radians(GetCameraFOV()), (float)m_scrWidth / (float)m_scrHeight, 0.1f, 1000.0f);
 	}
 
 protected:
@@ -87,8 +100,14 @@ private:
 	float m_yaw;
 	float m_fov;
 
+	/* Window Variables */
+	unsigned int m_scrHeight;
+	unsigned int m_scrWidth;
+
+
 	/* Cameras View */
 	glm::mat4 m_view;
+	glm::mat4 m_persProjView;
 
 	/* Camera's Speed */
 	float m_cameraSpeed;
