@@ -119,10 +119,6 @@ int Application::Update()
 	/* Binds to Texture Slot 1 */
 	m_textuerTwo.Bind(1);
 
-	VA.UnBind();
-	VB.UnBind();
-	IB.UnBind();
-
 	/* IMGUI Setup */
 	const char* glsl_version = "#version 450";
 	IMGUI_CHECKVERSION();
