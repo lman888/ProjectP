@@ -26,10 +26,10 @@ void Renderer::Clear() const
 	GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
-void Renderer::Draw(const VertexArray& a_va, const IndexBuffer& a_ib, const Shader& a_shader) const
+void Renderer::Draw(const VertexArray& a_va, const IndexBuffer& a_ib /*const Shader& a_shader*/) const
 {
 	/* Binds the Shader Program to the GPU */
-	a_shader.Bind();
+	//a_shader.Bind();
 	/* Binds the Vertex Array Buffer (This contains all of the Vertex Buffers data) */
 	a_va.Bind();
 	/* Binds our Index Buffer (contains the indices that are inside the Vertex Buffer,

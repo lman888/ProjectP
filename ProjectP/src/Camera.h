@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
 
 /* Remember, the world moves around the Camera */
 
@@ -9,9 +10,9 @@ class Camera
 {
 public:
 	/* Initialises the Cameras Variables */
-	Camera() : m_cameraPosition(-10.0f, 0.0f, 0.3f), m_cameraFront(0.0f, 0.0f, -1.0f),
+	Camera() : m_cameraPosition(-10.0f, 0.0f, 0.3f), m_cameraFront(1.0f, 0.0f, 0.10f),
 			   m_cameraUp(0.0f, 1.0f, 0.0f), m_cameraSpeed(10.0f),
-		       m_cameraSpeedValue(0.0f), m_pitch(0.0f), m_yaw(0.0f), 
+			   m_pitch(0.0f), m_yaw(0.0f), 
 			   m_view(0.0f), m_fov(45.0f){};
 
 	~Camera() {};
@@ -53,6 +54,16 @@ public:
 			m_cameraPosition += glm::normalize(glm::cross(m_cameraFront, m_cameraUp)) * m_cameraSpeed;
 	}
 	
+	void CameraScroll(double a_yOffSet)
+	{
+		m_fov -= (float)a_yOffSet;
+
+		if (m_fov < 1.0f);
+			m_fov = 1.0f;
+		if (m_fov > 45.0f)
+			m_fov = 45.0f;
+	}
+
 	float GetCameraFOV()
 	{
 		return m_fov;
@@ -81,6 +92,4 @@ private:
 
 	/* Camera's Speed */
 	float m_cameraSpeed;
-	float m_cameraSpeedValue;
-
 };

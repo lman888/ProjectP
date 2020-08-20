@@ -11,7 +11,7 @@ VertexBuffer::VertexBuffer(const void* a_data, unsigned int a_size)
     /* glBindBuffer binds the newly created Buffer to the Buffer Object (GL_ARRAY_BUFFER) */
 	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 	/* glBufferData function copies the Vertex Data into the Buffers memory (Puts the memory from the CPU into the GPU) */
-	glBufferData(GL_ARRAY_BUFFER, a_size, a_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, a_size, a_data, GL_DYNAMIC_DRAW);
 }
 
 VertexBuffer::~VertexBuffer()

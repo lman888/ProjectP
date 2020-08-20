@@ -8,6 +8,7 @@
 #include <gl/GL.h>
 #include "GLFW/glfw3.h"
 
+#include "Model.h"
 #include "Camera.h"
 #include "Renderer.h"
 #include "Shader.h"
@@ -16,6 +17,7 @@
 #include "VertexBufferLayout.h"
 #include "IndexBuffer.h"
 #include "VertexArray.h"
+#include "Geometry.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -36,8 +38,6 @@ public:
 
 	/* Stops the OpenGL Application */
 	void Terminate();
-
-	void CameraInputs(GLFWwindow *a_window);
 
 protected:
 

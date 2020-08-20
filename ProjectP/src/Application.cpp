@@ -21,9 +21,6 @@ float m_sensitivity = 0.01f;
 /* Initialize Mouse Pointer to be roughly Centre of the screen */
 float m_lastX = 500, m_lastY = 300;
 
-/* Camera's Field of View */
-float fov = 45.0f;
-
 /* Time between current frame and last frame */
 float m_deltaTime = 0.0f;
 
@@ -58,10 +55,12 @@ int Application::StartUp(void)
 	/* Make the windows context current */
 	glfwMakeContextCurrent(m_window);
 
+	/* Callback Functions */
 	/* Checks if the Window has been resized */
 	glfwSetFramebufferSizeCallback(m_window, FramBufferSizeCallBack);
+	/* Calculates the Mouse's current position on the screen */
 	glfwSetCursorPosCallback(m_window, MouseCallback);
-	glfwSetScrollCallback(m_window, MouseScrollCallback);
+	//glfwSetScrollCallback(m_window, MouseScrollCallback); //Implement Later
 
 	/* Checks if GLAD was loaded correctly */
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -91,87 +90,6 @@ int Application::StartUp(void)
 
 int Application::Update()
 {
-	/* Vertex Positions for Quad */
-	float m_vertices[4 * 4] =
-	{
-		//Position       //Texture Coords
-	   -50.0f, -50.0f,  0.0f, 0.0f, // 0 - Bottom Left
-		50.0f, -50.0f,  1.0f, 0.0f, // 1 - Right Side
-		50.0f,  50.0f,  1.0f, 1.0f, // 2 - Top Right
-	   -50.0f,  50.0f,  0.0f, 1.0f  // 3 - Left Side
-	};
-
-	/* Vertex Positions for Cube */
-	float vertices[24 * 5] = {
-		-50.0f, -50.0f, -50.0f,  0.0f, 0.0f, // 0
-		 50.0f, -50.0f, -50.0f,  1.0f, 0.0f, // 1
-		 50.0f,  50.0f, -50.0f,  1.0f, 1.0f, // 2
-		-50.0f,  50.0f, -50.0f,  0.0f, 1.0f, // 3
-
-		-50.0f, -50.0f,  50.0f,  0.0f, 0.0f, // 4
-		 50.0f, -50.0f,  50.0f,  1.0f, 0.0f, // 5
-		 50.0f,  50.0f,  50.0f,  1.0f, 1.0f, // 6
-		-50.0f,  50.0f,  50.0f,  0.0f, 1.0f, // 7
-
-		-50.0f,  50.0f,  50.0f,  1.0f, 0.0f, // 8
-		-50.0f,  50.0f, -50.0f,  1.0f, 1.0f, // 9
-		-50.0f, -50.0f, -50.0f,  0.0f, 1.0f, // 10
-		-50.0f, -50.0f,  50.0f,  0.0f, 0.0f, // 11
-
-		 50.0f,  50.0f,  50.0f,  1.0f, 0.0f, // 12
-		 50.0f,  50.0f, -50.0f,  1.0f, 1.0f, // 13
-		 50.0f, -50.0f, -50.0f,  0.0f, 1.0f, // 14
-		 50.0f, -50.0f,  50.0f,  0.0f, 0.0f, // 15
-
-		-50.0f, -50.0f, -50.0f,  0.0f, 1.0f, // 16
-		 50.0f, -50.0f, -50.0f,  1.0f, 1.0f, // 17
-		 50.0f, -50.0f,  50.0f,  1.0f, 0.0f, // 18
-		-50.0f, -50.0f,  50.0f,  0.0f, 0.0f, // 19
-
-		-50.0f,  50.0f, -50.0f,  0.0f, 1.0f, // 20
-		 50.0f,  50.0f, -50.0f,  1.0f, 1.0f, // 21
-		 50.0f,  50.0f,  50.0f,  1.0f, 0.0f, // 22
-		-50.0f,  50.0f,  50.0f,  0.0f, 0.0f, // 23
-	};
-
-	unsigned int m_indices[12 * 3] =
-	{
-		0, 1, 2, //First Triangle
-		2, 3, 0, //Second Triangle
-
-		4, 5, 6, //First Triangle
-		6, 7, 4, //Second Triangle
-
-		8, 9, 10,
-		10, 11, 8,
-
-		12, 13, 14,
-		14, 15, 12,
-
-		16, 17, 18,
-		18, 19, 16,
-
-		20, 21, 22,
-		22, 23, 20
-	};
-
-	VertexArray VA;
-	/* VERTEX BUFFER BINDING */
-	/* Creates a Vertex Buffer and specifies the size */
-	VertexBuffer VB(vertices, 24 * 5 * sizeof(float));
-
-	VertexBufferLayout m_Layout;
-
-	/* Specifies what data will go into the Vertex Array */
-	m_Layout.Push<float>(3);
-	m_Layout.Push<float>(2);
-
-	/* Adds the Vertex Buffer to the Vertex Array */
-	VA.AddBuffer(VB, m_Layout);
-
-	/* INDEX BUFFER BINDING */
-	IndexBuffer IB(m_indices, 12 * 3);
-
 	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Top, Far, Near) */
 	glm::mat4 m_proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -90.0f, 500.0f);
 
@@ -181,9 +99,14 @@ int Application::Update()
 
 	/* Pass in the Shader Files */
 	Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
+	Shader m_colorShader("Shaders/VertexShaderPrac.vert", "Shaders/FragmentShaderPrac.frag");
 
 	/* Binds the Shader */
 	m_shader.Bind();
+	m_shader.UnBind();
+
+	m_colorShader.Bind();
+	m_colorShader.UnBind();
 
 	/* Texture Location */
 	Texture m_texture("Textures/Future City.png");
@@ -212,10 +135,12 @@ int Application::Update()
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
 	/* Objects Initial Position */
-	glm::vec3 m_translationA(500.0f, 0, 0.0f);
-	glm::vec3 m_translationB(500.0f, 0, 200.0f);
+	glm::vec3 m_translationA(300.0f, 0.0f, 300.0f);
+	glm::vec3 m_translationB(500.0f, 0.0f, 200.0f);
 
 	Renderer m_renderer;
+
+	Geometry m_geometry;
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -230,6 +155,7 @@ int Application::Update()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		/* Calculates Delta and Last-Frame Time */
 		float m_currentFrame = glfwGetTime();
 		m_deltaTime = m_currentFrame - m_lastFrame;
 		m_lastFrame = m_currentFrame;
@@ -237,6 +163,7 @@ int Application::Update()
 		glm::mat4 m_persProj = glm::perspective(glm::radians(m_camera.GetCameraFOV()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
 
 		m_camera.CameraInputs(m_window, m_cameraSpeedValue, m_deltaTime);
+	
 
 		/* Renders Two objects (Exact same object) */
 		{
@@ -246,19 +173,24 @@ int Application::Update()
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
 			glm::mat4 m_mvp = m_persProj * m_camera.GetViewMatrix() * m_model;
-			m_shader.SetUniform1i("u_Texture", 0);
-			m_shader.SetUniformMat4F("u_MVP", m_mvp);
-			m_renderer.Draw(VA, IB, m_shader);
+			m_colorShader.Bind();
+			//m_shader.SetUniform1i("u_Texture", 0);
+			m_colorShader.SetUniformMat4F("u_MVP", m_mvp);
+			m_geometry.GenerateQuad();
+			//m_renderer.Draw(VA, IB);
 		}
+
 		{
 			/* Model Matrix */
 			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationB);
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
 			glm::mat4 m_mvp = m_persProj * m_camera.GetViewMatrix() * m_model;
+			m_shader.Bind();
 			m_shader.SetUniform1i("u_Texture", 1);
 			m_shader.SetUniformMat4F("u_MVP", m_mvp);
-			m_renderer.Draw(VA, IB, m_shader);
+			m_geometry.GenerateCube();
+			//m_renderer.Draw(VA, IB);
 		}
 
 		/* ImGui Window Render */
@@ -278,8 +210,6 @@ int Application::Update()
 		glfwSwapBuffers(m_window);
 		/* Poll for Events */
 		glfwPollEvents();
-		std::cout << fov << std::endl;
-
 	}
 
 	ImGui_ImplGlfw_Shutdown();
@@ -292,11 +222,6 @@ int Application::Update()
 void Application::Terminate()
 {
 	glfwTerminate();
-}
-
-void Application::CameraInputs(GLFWwindow* a_window)
-{
-
 }
 
 /* Resize Window Callback Function*/
@@ -351,10 +276,5 @@ void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos)
 
 void MouseScrollCallback(GLFWwindow* a_window, double a_XoffSet, double a_yOffSet)
 {
-	fov += (float)a_yOffSet;
-
-	if (fov < 1.0f);
-		fov = 1.0f;
-	if (fov > 45.0f)
-		fov = 45.0f;
+	m_camera.CameraScroll(a_yOffSet);
 }

@@ -1,0 +1,33 @@
+﻿  glad.c
+  imgui.cpp
+  imgui_demo.cpp
+  imgui_draw.cpp
+  imgui_impl_glfw.cpp
+  imgui_impl_opengl3.cpp
+  imgui_widgets.cpp
+  stb_image.cpp
+  IndexBuffer.cpp
+  Shader.cpp
+  Renderer.cpp
+C:\Users\Liam\Documents\Development\ProjectP\src\Renderer.cpp(22,2): warning C4305: 'argument': truncation from 'double' to 'GLfloat'
+  Application.cpp
+C:\Users\Liam\Documents\Development\ProjectP\src\Camera.h(61,20): warning C4390: ';': empty controlled statement found; is this the intent?
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(238,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(324,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(325,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(331,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(332,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(333,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(334,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Main.cpp
+C:\Users\Liam\Documents\Development\ProjectP\src\Camera.h(61,20): warning C4390: ';': empty controlled statement found; is this the intent?
+  Texture.cpp
+  VertexBuffer.cpp
+  VertexArray.cpp
+C:\Users\Liam\Documents\Development\ProjectP\src\VertexArray.cpp(35,1): warning C4312: 'type cast': conversion from 'unsigned int' to 'const void *' of greater size
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(89): warning C4715: 'Application::StartUp': not all control paths return a value
+  All 2093 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  ProjectP.vcxproj -> C:\Users\Liam\Documents\Development\ProjectP\bin\x64\Release\ProjectP.exe

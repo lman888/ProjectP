@@ -1,13 +1,15 @@
 ﻿  Application.cpp
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(233,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(324,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(325,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(331,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(332,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(333,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(334,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(356,17): warning C4390: ';': empty controlled statement found; is this the intent?
+C:\Users\Liam\Documents\Development\ProjectP\src\Camera.h(61,20): warning C4390: ';': empty controlled statement found; is this the intent?
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(254,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(344,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(345,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(351,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(352,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(353,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(354,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Geometry.cpp
   Main.cpp
+C:\Users\Liam\Documents\Development\ProjectP\src\Camera.h(61,20): warning C4390: ';': empty controlled statement found; is this the intent?
   Generating Code...
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(90): warning C4715: 'Application::StartUp': not all control paths return a value
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(89): warning C4715: 'Application::StartUp': not all control paths return a value
   ProjectP.vcxproj -> C:\Users\Liam\Documents\Development\ProjectP\bin\x64\Debug\ProjectP.exe
