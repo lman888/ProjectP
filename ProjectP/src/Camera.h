@@ -66,7 +66,7 @@ public:
 			m_fov = 45.0f;
 	}
 
-	void SetProjView(unsigned int a_height, unsigned int a_width)
+	void SetScreenDimensions(unsigned int a_height, unsigned int a_width)
 	{
 		m_scrHeight = a_height;
 		m_scrWidth = a_width;

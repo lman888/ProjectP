@@ -1,14 +1,11 @@
 ﻿  Application.cpp
 C:\Users\Liam\Documents\Development\ProjectP\src\Camera.h(63,20): warning C4390: ';': empty controlled statement found; is this the intent?
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(156,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(246,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(247,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(253,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(254,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(255,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(256,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-  Main.cpp
-C:\Users\Liam\Documents\Development\ProjectP\src\Camera.h(63,20): warning C4390: ';': empty controlled statement found; is this the intent?
-  Generating Code...
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(177,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(285,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(286,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(292,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(293,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(294,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(295,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(89): warning C4715: 'Application::StartUp': not all control paths return a value
   ProjectP.vcxproj -> C:\Users\Liam\Documents\Development\ProjectP\bin\x64\Debug\ProjectP.exe

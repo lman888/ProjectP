@@ -98,15 +98,29 @@ int Application::Update()
 	//glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 
 	/* Pass in the Shader Files */
-	Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
-	Shader m_colorShader("Shaders/VertexShaderPrac.vert", "Shaders/FragmentShaderPrac.frag");
+	//Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
+	//Shader m_colorShader("Shaders/VertexShaderPrac.vert", "Shaders/FragmentShaderPrac.frag");
 
-	/* Binds the Shader */
+	Shader m_shader;
+	Shader m_colorShader;
+
+	m_shader.CompileShader("Shaders/ShaderVertTest.vert");
+	m_shader.CompileShader("Shaders/ShaderFragTest.frag");
+
+	m_colorShader.CompileShader("Shaders/VertexShaderPrac.vert");
+	m_colorShader.CompileShader("Shaders/FragmentShaderPrac.frag");
+
+	/* Binds and UnBinds the Shader */
+	m_shader.Link();
+	m_shader.Validate();
 	m_shader.Bind();
-	m_shader.UnBind();
+	//m_shader.UnBind();
 
+	/* Binds and Unbinds the Shader */
+	m_colorShader.Link();
+	m_colorShader.Validate();
 	m_colorShader.Bind();
-	m_colorShader.UnBind();
+	//m_colorShader.UnBind();
 
 	/* Texture Location */
 	Texture m_texture("Textures/Future City.png");
@@ -133,11 +147,18 @@ int Application::Update()
 	/* Objects Initial Position */
 	glm::vec3 m_translationA(300.0f, 0.0f, 300.0f);
 	glm::vec3 m_translationB(500.0f, 0.0f, 200.0f);
+	glm::vec3 m_translationC(100.0f, 0.0f, 100.0f);
 
+	/* Renderer */
 	Renderer m_renderer;
+
+	/* New Geometry Class */
 	Geometry m_geometry;
 
-	m_camera.SetProjView(SCR_HEIGHT, SCR_WIDTH);
+	bool m_buttonPressed = false;
+
+	/* Passes through the Screen Parameters (Since I dont know a better way this will do for now) */
+	m_camera.SetScreenDimensions(SCR_HEIGHT, SCR_WIDTH);
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -160,7 +181,6 @@ int Application::Update()
 		glm::mat4 m_persProj = glm::perspective(glm::radians(m_camera.GetCameraFOV()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
 
 		m_camera.CameraInputs(m_window, m_cameraSpeedValue, m_deltaTime);
-	
 
 		/* Renders Two objects (Exact same object) */
 		{
@@ -172,9 +192,8 @@ int Application::Update()
 			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
 			m_colorShader.Bind();
 			//m_shader.SetUniform1i("u_Texture", 0);
-			m_colorShader.SetUniformMat4F("u_MVP", m_mvp);
+			m_colorShader.SetUniformMat4f("u_MVP", m_mvp);
 			m_geometry.GenerateQuad();
-			//m_renderer.Draw(VA, IB);
 		}
 
 		{
@@ -185,9 +204,8 @@ int Application::Update()
 			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
 			m_shader.Bind();
 			m_shader.SetUniform1i("u_Texture", 1);
-			m_shader.SetUniformMat4F("u_MVP", m_mvp);
+			m_shader.SetUniformMat4f("u_MVP", m_mvp);
 			m_geometry.GenerateCube();
-			//m_renderer.Draw(VA, IB);
 		}
 
 		/* ImGui Window Render */
@@ -195,9 +213,30 @@ int Application::Update()
 			/* Edit 1 float using a slider from 0.0f to 960.0f */
 			ImGui::SliderFloat3("Translation A", &m_translationA.x, 0.0f, 960.0f);
 			ImGui::SliderFloat3("Translation B", &m_translationB.x, 0.0f, 960.0f);
+			if (m_buttonPressed)
+			{
+				ImGui::SliderFloat3("Translation C", &m_translationC.x, 0.0f, 960.0f);
+			}
 			ImGui::SliderFloat("Camera Speed", &m_cameraSpeedValue, 0.0f, 500.0f);
 			ImGui::SliderFloat("Camera Sensitivity", &m_sensitivity, 0.01f, 1.0f);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		}
+
+		if (ImGui::Button("Spawn Cube", ImVec2(100.0f, 30.0f)))
+		{
+			m_buttonPressed = true;
+		};
+
+		if (m_buttonPressed)
+		{
+			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationC);
+			/* Model View Projection Calculation */
+			/* (In OpenGL its Projection View Model) */
+			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
+			m_shader.Bind();
+			m_shader.SetUniform1i("u_Texture", 1);
+			m_shader.SetUniformMat4f("u_MVP", m_mvp);
+			m_geometry.GenerateCube();
 		}
 
 		ImGui::Render();
