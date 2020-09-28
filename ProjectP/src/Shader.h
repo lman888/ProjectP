@@ -38,7 +38,6 @@ class Shader
 {
 public:
 
-	//Shader(const char* a_vertexPath, const char* a_fragmentPath);
 	Shader() : m_linked(false), m_handle(0) {};
 	~Shader();
 
@@ -58,7 +57,6 @@ public:
 	void Link();
 	void Validate();
 	void UnBind() const;
-	void Validate() const;
 
 	/* Return Functions */
 	int GetHandle() { return m_handle; }
@@ -67,7 +65,8 @@ public:
 
 	void BindAttribLocation(unsigned int a_location, const char* a_name);
 	void BindFragDataLocation(unsigned int a_location, const char* a_name);
-	void FindUniformLocations();
+	void PrintActiveAttribs();
+	void PrintActiveUniforms();
 
 	/* Set Uniform Functions */
 	void SetUniform1f(const std::string &a_name, float a_value);
@@ -79,9 +78,17 @@ public:
 	void SetUniformVec3f(const std::string& a_name, const glm::vec3& a_value);
 	void SetUniformVec4f(const std::string& a_name, glm::vec4& a_value);
 
+	void PracticePipleLine();
+	void UniformBlock();
 
 	/* Deletes the Shader Program */
 	void TerminateProgram();
+
+	std::string LoadShaderAsString(const char* a_fileName);
+
+
+
+	void CreateShaderPrograms();
 
 protected:
 
@@ -96,8 +103,8 @@ private:
 	/* Holds the Uniforms Cache Location */
 	std::unordered_map<std::string, int> m_UniformLocationCache;
 
-	std::string LoadShaderAsString(const char* a_fileName);
 	void DetachAndDeleteShaders();
 
+	const char *GetValueTypeString(GLenum a_type);
 };
 

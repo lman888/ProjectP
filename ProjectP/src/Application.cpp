@@ -4,6 +4,9 @@ void FramBufferSizeCallBack(GLFWwindow* a_window, int a_width, int a_height);
 void ProcessInput(GLFWwindow* a_window);
 void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos);
 void MouseScrollCallback(GLFWwindow* a_window, double a_XoffSet, double a_yOffSet);
+void DebugCallBack(GLenum a_source, GLenum a_type, GLuint a_ID,
+	GLenum a_severity, GLsizei a_length, const GLchar* a_message,
+	const void* a_param);
 
 /* Calls the GLFW Window */
 GLFWwindow* m_window = NULL;
@@ -35,6 +38,8 @@ int Application::StartUp(void)
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_ANY_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+	
 
 	if (!glfwInit())
 	{
@@ -68,6 +73,11 @@ int Application::StartUp(void)
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
+
+	/* OpenGL Debug CallBack */
+	glEnable(GL_DEBUG_OUTPUT);
+	glDebugMessageCallback(DebugCallBack, nullptr);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
 
 	/* Version of OpenGL */
 	std::cout << glGetString(GL_VERSION) << std::endl;
@@ -107,20 +117,25 @@ int Application::Update()
 	m_shader.CompileShader("Shaders/ShaderVertTest.vert");
 	m_shader.CompileShader("Shaders/ShaderFragTest.frag");
 
-	m_colorShader.CompileShader("Shaders/VertexShaderPrac.vert");
-	m_colorShader.CompileShader("Shaders/FragmentShaderPrac.frag");
+	m_colorShader.CompileShader("Shaders/BlobShader.vert");
+	m_colorShader.CompileShader("Shaders/BlobShader.frag");
 
 	/* Binds and UnBinds the Shader */
 	m_shader.Link();
 	m_shader.Validate();
 	m_shader.Bind();
-	//m_shader.UnBind();
+	m_shader.UnBind();
+	m_shader.PrintActiveUniforms();
+	m_shader.PrintActiveAttribs();
 
 	/* Binds and Unbinds the Shader */
 	m_colorShader.Link();
 	m_colorShader.Validate();
 	m_colorShader.Bind();
-	//m_colorShader.UnBind();
+	m_colorShader.UniformBlock();
+	m_colorShader.UnBind();
+	m_colorShader.PrintActiveUniforms();
+	m_colorShader.PrintActiveAttribs();
 
 	/* Texture Location */
 	Texture m_texture("Textures/Future City.png");
@@ -129,9 +144,9 @@ int Application::Update()
 	/* Binds the Texture */
 	/* If no argument was put in, it is automatically 0 */
 	/* Assigns Texture to Slot 0 */
-	m_texture.Bind(0);
+	m_texture.Bind(1);
 	/* Binds to Texture Slot 1 */
-	m_textuerTwo.Bind(1);
+	m_textuerTwo.Bind(0);
 
 	/* IMGUI Setup */
 	const char* glsl_version = "#version 450";
@@ -177,7 +192,7 @@ int Application::Update()
 		float m_currentFrame = glfwGetTime();
 		m_deltaTime = m_currentFrame - m_lastFrame;
 		m_lastFrame = m_currentFrame;
-		
+
 		glm::mat4 m_persProj = glm::perspective(glm::radians(m_camera.GetCameraFOV()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
 
 		m_camera.CameraInputs(m_window, m_cameraSpeedValue, m_deltaTime);
@@ -191,7 +206,7 @@ int Application::Update()
 			/* (In OpenGL its Projection View Model) */
 			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
 			m_colorShader.Bind();
-			//m_shader.SetUniform1i("u_Texture", 0);
+			//m_colorShader.SetUniform1i("u_Texture", 1);
 			m_colorShader.SetUniformMat4f("u_MVP", m_mvp);
 			m_geometry.GenerateQuad();
 		}
@@ -234,7 +249,7 @@ int Application::Update()
 			/* (In OpenGL its Projection View Model) */
 			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
 			m_shader.Bind();
-			m_shader.SetUniform1i("u_Texture", 1);
+			m_shader.SetUniform1i("u_Texture", 0);
 			m_shader.SetUniformMat4f("u_MVP", m_mvp);
 			m_geometry.GenerateCube();
 		}
@@ -313,4 +328,108 @@ void MouseCallback(GLFWwindow* a_window, double a_xpos, double a_ypos)
 void MouseScrollCallback(GLFWwindow* a_window, double a_XoffSet, double a_yOffSet)
 {
 	m_camera.CameraScroll(a_yOffSet);
+}
+
+std::string ErrorSourceToString(GLenum a_source)
+{
+	std::string m_errorStr;
+
+	switch (a_source)
+	{
+	case GL_DEBUG_SOURCE_API:
+		m_errorStr = "OPENGL_API_ERROR: ";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		m_errorStr = "WINDOWS_API_ERROR: ";
+		break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		m_errorStr = "THIRD_PARTY_ERROR: ";
+		break;
+	case GL_DEBUG_SOURCE_APPLICATION:
+		m_errorStr = "APPLICATION_ERROR: ";
+		break;
+	case GL_DEBUG_SOURCE_OTHER:
+		m_errorStr = "OTHER_SOURCE_ERROR: ";
+		break;
+	}
+	std::cout << std::endl;
+	return m_errorStr;
+}
+
+std::string ErrorTypeToString(GLenum a_source)
+{
+	std::string m_errorStr;
+
+	switch (a_source)
+	{
+	case GL_DEBUG_TYPE_ERROR:
+		m_errorStr = "OPENGL_API_ERROR: ";
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		m_errorStr = "DEPRECIATED_ERROR: ";
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		m_errorStr = "UNDERFINED_ERROR: ";
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY:
+		m_errorStr = "PORTABILITY_ERROR: ";
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		m_errorStr = "PERFORMANCE_ERROR: ";
+		break;
+	case GL_DEBUG_TYPE_MARKER:
+		m_errorStr = "ANNOTAION: ";
+		break;
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		m_errorStr = "DEBUG_GROUP_PUSH: ";
+		break;
+	case GL_DEBUG_TYPE_POP_GROUP:
+		m_errorStr = "DEBUG_GROUP_POP: ";
+		break;
+	case GL_DEBUG_TYPE_OTHER:
+		m_errorStr = "OTHER_MESSAGES: ";
+		break;
+	}
+	std::cout << std::endl;
+	return m_errorStr;
+}
+
+std::string ErrorSeverityToString(GLenum a_source)
+{
+	std::string m_errorStr;
+
+	switch (a_source)
+	{
+	case GL_DEBUG_SEVERITY_HIGH:
+		m_errorStr = "HIGH SEVERITY: ";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		m_errorStr = "MEDIUM_SEVERITY: ";
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		m_errorStr = "LOW_SEVERITY: ";
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		m_errorStr = "DEBUG_NOTIFICATION: ";
+		break;
+	}
+	std::cout << std::endl;
+	return m_errorStr;
+}
+
+void DebugCallBack(GLenum a_source, GLenum a_type, GLuint a_ID,
+	GLenum a_severity, GLsizei a_length, const GLchar* a_message,
+	const void* a_param)
+{
+	if (a_ID == 131169 || a_ID == 131185 || a_ID == 131218 || a_ID == 131204) return;
+	
+	std::cout << "-----------------------------------" << std::endl;
+	std::cout << "Debug_Message (" << a_ID << "): " << a_message << std::endl;
+
+	//Convert GLenum params into strings
+	std::string m_sourceStr = ErrorSourceToString(a_source);
+	std::string m_typeStr = ErrorTypeToString(a_type);
+	std::string m_severityStr = ErrorSeverityToString(a_severity);
+
+	printf("%s:%s[%s] (%d): %s", m_sourceStr, m_typeStr, m_severityStr, a_ID, a_message);
 }

@@ -11,95 +11,6 @@ namespace GLSLShaderInfo
 	};
 }
 
-//Shader::Shader(const char* a_vertexPath, const char* a_fragmentPath)
-//{
-//	/* Retrieves the Vertex/Fragment source code from the File Path */
-//	/* Vert Code Path */
-//	std::string vertexCode;
-//	/* Frag Code Path */
-//	std::string fragmentCode;
-//	/* Vert Shader File */
-//	std::ifstream vShaderFile;
-//	/* Frag Shader File */
-//	std::ifstream fShaderFile;
-//
-//	/* Ensure ifstream objects can throw exeptions */
-//	vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-//	fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-//	try
-//	{
-//		/* Opens Files */
-//		vShaderFile.open(a_vertexPath);
-//		fShaderFile.open(a_fragmentPath);
-//		/* File Stream holders */
-//		std::stringstream vShaderStream, fShaderStream;
-//		/* Reads File's buffer contents into streams */
-//		vShaderStream << vShaderFile.rdbuf();
-//		fShaderStream << fShaderFile.rdbuf();
-//		/* Close file handlers */
-//		vShaderFile.close();
-//		fShaderFile.close();
-//		/* Convert File Stream into String */
-//		vertexCode = vShaderStream.str();
-//		fragmentCode = fShaderStream.str();
-//	}
-//	catch (std::ifstream::failure e)
-//	{
-//		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-//	}
-//
-//	const char* vShaderCode = vertexCode.c_str();
-//	const char* fShaderCode = fragmentCode.c_str();
-//
-//	/* Compile Shaders */
-//	unsigned int vertex, fragment;
-//	int success;
-//	char infoLog[512];
-//
-//	/* Vertex Shader */
-//	vertex = glCreateShader(GL_VERTEX_SHADER);
-//	glShaderSource(vertex, 1, &vShaderCode, NULL);
-//	glCompileShader(vertex);
-//	/* Print Compile Errors if any occured */
-//	glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
-//	if (success == GL_FALSE)
-//	{
-//		glGetShaderInfoLog(vertex, 512, NULL, infoLog);
-//		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-//	}
-//
-//	/* Fragment Shader */
-//	fragment = glCreateShader(GL_FRAGMENT_SHADER);
-//	glShaderSource(fragment, 1, &fShaderCode, NULL);
-//	glCompileShader(fragment);
-//	/* Print Compile Errors if any occured */
-//	glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
-//	if (success == GL_FALSE)
-//	{
-//		glGetShaderInfoLog(fragment, 512, NULL, infoLog);
-//		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-//	}
-//
-//	/* Shader Program */
-//	/* Sets the ID of the Shader Program */
-//	m_ID = glCreateProgram();
-//	/* Attachers the Shaders to the ID */
-//	glAttachShader(m_ID, vertex);
-//	glAttachShader(m_ID, fragment);
-//	/* Links the Shader Program ID with OpenGL */
-//	glLinkProgram(m_ID);
-//	/* Print linking errors if any occured */
-//	if (!success)
-//	{
-//		glGetProgramInfoLog(m_ID, 512, NULL, infoLog);
-//		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-//	}
-//
-//	/* Deletes the Shaders after they are linked into our program */
-//	glDeleteShader(vertex);
-//	glDeleteShader(fragment);
-//}
-
 Shader::~Shader()
 {
 	GLCall(glDeleteProgram(m_handle));
@@ -285,10 +196,6 @@ void Shader::UnBind() const
 	GLCall(glUseProgram(0));
 }
 
-void Shader::Validate() const
-{
-}
-
 void Shader::BindAttribLocation(unsigned int a_location, const char* a_name)
 {
 }
@@ -297,8 +204,67 @@ void Shader::BindFragDataLocation(unsigned int a_location, const char* a_name)
 {
 }
 
-void Shader::FindUniformLocations()
+void Shader::PrintActiveAttribs()
 {
+	/* List of Active Vertex Input Attributes and Locations */
+
+	/* Querying for the number of active attributes */
+	GLint m_numAttribs;
+	glGetProgramInterfaceiv(m_handle, GL_PROGRAM_INPUT,
+		                    GL_ACTIVE_RESOURCES, &m_numAttribs);
+
+	/* Loop through each attribute, query for the Length of the name, type and the attribute location */
+	GLenum m_properties[] = { GL_NAME_LENGTH, GL_TYPE, GL_LOCATION };
+	std::cout << "\nActive Attributes" << std::endl;
+
+	for (int i = 0; i < m_numAttribs; i++)
+	{
+		GLint m_results[3];
+		glGetProgramResourceiv(m_handle, GL_PROGRAM_INPUT, i, 3, m_properties, 3, NULL, m_results);
+
+		GLint m_nameBufSize = m_results[0] + 1;
+		char* m_name = new char[m_nameBufSize];
+		glGetProgramResourceName(m_handle, GL_PROGRAM_INPUT,
+								 i, m_nameBufSize, NULL, m_name);
+
+		printf("%-5d %s (%s)n", m_results[2], m_name, GetValueTypeString(m_results[1]));
+		delete[] m_name;
+	} std::cout << std::endl;
+}
+
+void Shader::PrintActiveUniforms()
+{
+	/* Will Print out the currently active Uniforms in the Shaders */
+
+	/* Start by querying for the number of active Uniform Variables */
+	GLint m_numUniforms = 0;
+	glGetProgramInterfaceiv(m_handle, GL_UNIFORM,
+							GL_ACTIVE_RESOURCES, &m_numUniforms);
+
+	/* Loop through each Uniform Index and query for the length of the name, type,
+	   location and block index */
+
+	GLenum m_properties[] = { GL_NAME_LENGTH, GL_TYPE, GL_LOCATION, GL_BLOCK_INDEX };
+
+	std::cout << "\nActive Uniforms" << std::endl;
+	for (int i = 0; i < m_numUniforms; i++)
+	{
+		GLint m_result[4];
+
+		glGetProgramResourceiv(m_handle, GL_UNIFORM, i, 4, m_properties, 4, NULL, m_result);
+
+		if (m_result[3] != -1)
+			continue; // Skips Uniform Blocks
+
+		GLint m_nameBufSize = m_result[0] + 1;
+
+		char* m_name = new char[m_nameBufSize];
+
+		glGetProgramResourceName(m_handle, GL_UNIFORM, i,
+			m_nameBufSize, NULL, m_name);
+		printf("%-5d %s (%s)n", m_result[2], m_name, GetValueTypeString(m_result[1]));
+		delete[] m_name;
+	} std::cout << std::endl;
 }
 
 void Shader::SetUniform1f(const std::string& a_name, float a_value)
@@ -339,6 +305,94 @@ void Shader::SetUniformVec3f(const std::string& a_name, const glm::vec3& a_value
 void Shader::SetUniformVec4f(const std::string& a_name, glm::vec4& a_value)
 {
 	GLCall(glUniform4fv(GetUniformLocation(a_name), 1, &a_value[0.0f]));
+}
+
+void Shader::PracticePipleLine()
+{
+	/* Loads and Compiles Shaders */
+	std::string m_vertCode = LoadShaderAsString("Shaders/Seperable.vert");
+	std::string m_fragCode1 = LoadShaderAsString("Shaders/Seperable.frag");
+	std::string m_fragCode2 = LoadShaderAsString("Shaders/Seperable1.frag");
+
+	/* Create 3 Shader Programs for each using glCreateShaderProgramV */
+	GLuint m_programs[3];
+	const GLchar * m_codePtrs[] = { m_vertCode.c_str(), m_fragCode1.c_str(), m_fragCode2.c_str() };
+	m_programs[0] = glCreateShaderProgramv(GL_VERTEX_SHADER, 1, m_codePtrs);
+	m_programs[1] = glCreateShaderProgramv(GL_FRAGMENT_SHADER, 1, m_codePtrs + 1);
+	m_programs[2] = glCreateShaderProgramv(GL_FRAGMENT_SHADER, 1, m_codePtrs + 2);
+
+	/* Now we create two pipelines. */
+	/* The first will use the Vertex Shader and the first fragment shader, and the second will use the Vertex,
+	   shader and second Fragment Shader*/
+	GLuint m_pipelines[2];
+	glCreateProgramPipelines(2, m_pipelines);
+	/* First Pipeline */
+	glUseProgramStages(m_pipelines[0], GL_VERTEX_SHADER_BIT, m_programs[0]);
+	glUseProgramStages(m_pipelines[0], GL_FRAGMENT_SHADER_BIT, m_programs[1]);
+	/* Second Pipeline */
+	glUseProgramStages(m_pipelines[1], GL_VERTEX_SHADER_BIT, m_programs[0]);
+	glUseProgramStages(m_pipelines[1], GL_FRAGMENT_SHADER_BIT, m_programs[2]);
+
+	GLint m_location = glGetUniformLocation(m_programs[0], "u_MVP");
+	glProgramUniform3f(m_programs[0], m_location, 0, 1, 0);
+
+	glUseProgram(0);
+	glViewport(0, 0, 1980 / 2, 1080);
+	glBindProgramPipeline(m_pipelines[0]);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	glUseProgram(0);
+	glViewport(1980 / 2, 0, 1980 / 2, 1080);
+	glBindProgramPipeline(m_pipelines[1]);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	glBindVertexArray(0);
+}
+
+void Shader::UniformBlock()
+{
+	/* UniformBlock */
+	/* Allocate Space for the Buffer to contain Data for the uniform Block */
+	unsigned int m_blockIndex = glGetUniformBlockIndex(m_handle, "u_blobSettings");
+	int m_blockSize = NULL;
+	glGetActiveUniformBlockiv(m_handle, m_blockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &m_blockSize);
+
+	GLubyte* m_blockBuffer;
+	m_blockBuffer = (GLubyte*)malloc(m_blockSize);
+
+	/* Query for the offset of each variable within the block */
+	const char* m_names[] = { "u_blobSettings.innerColor", "u_blobSettings.outerColor",
+							  "u_blobSettings.radiusInner", "u_blobSettings.radiusOuter" };
+	unsigned int m_indices[4];
+	glGetUniformIndices(m_handle, 4, m_names, m_indices);
+
+	int m_offset[4];
+	glGetActiveUniformsiv(m_handle, 4, m_indices, GL_UNIFORM_OFFSET, m_offset);
+
+	/* Place Data into the Buffer at the appropriate Offsets */
+	float m_outerColor[] = {0.0f, 0.0f, 0.0f, 0.0f };
+	float m_innerColor[] = { 1.0f, 1.0f, 0.75f, 1.0f };
+	float m_innerRadius = 0.25f, m_outerRadius = 0.45f;
+
+	memcpy(m_blockBuffer + m_offset[0], m_innerColor,
+		   4 * sizeof(GLfloat));
+	memcpy(m_blockBuffer + m_offset[1], m_outerColor,
+		   4 * sizeof(GLfloat));
+	memcpy(m_blockBuffer + m_offset[2], &m_innerRadius,
+		   sizeof(GLfloat));
+	memcpy(m_blockBuffer + m_offset[3], &m_outerRadius,
+		   sizeof(GLfloat));
+
+	/* Create the Buffer Object and cope the data into it */
+	unsigned int m_uboHandle;
+	glGenBuffers(1, &m_uboHandle);
+	glBindBuffer(GL_UNIFORM_BUFFER, m_uboHandle);
+	glBufferData(GL_UNIFORM_BUFFER, m_blockSize, m_blockBuffer,
+		         GL_DYNAMIC_DRAW);
+
+	/* Bind the buffer object to the Uniform Buffer-Binding,
+	   point at the index specified by the binding-layout qualified in the fragment shader (0) */
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_uboHandle);
 }
 
 void Shader::TerminateProgram()
@@ -395,32 +449,10 @@ std::string Shader::LoadShaderAsString(const char* a_fileName)
 		}
 	}
 	return "";
+}
 
-	///* Shader Code Path */
-	//std::string m_shaderCode;
-	///* Shader File */
-	//std::ifstream m_shaderFile;
-
-	///* Ensures ifstream objects can throw exceptions */
-	//m_shaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-	//try
-	//{
-	//	m_shaderFile.open(a_fileName);
-	//	/* File Stream Holders */
-	//	std::stringstream m_shaderStream;
-	//	/* Reads the File's buffer contents into the stream */
-	//	m_shaderStream << m_shaderFile.rdbuf();
-	//	m_shaderFile.close();
-
-	//	m_shaderCode = m_shaderStream.str();
-	//}
-	//catch(std::ifstream::failure e)
-	//{
-	//	std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
-	//}
-
-	//return m_shaderCode;
+void Shader::CreateShaderPrograms()
+{
 }
 
 void Shader::DetachAndDeleteShaders()
@@ -434,5 +466,36 @@ void Shader::DetachAndDeleteShaders()
 	{
 		glDetachShader(m_handle, m_shader);
 		glDeleteShader(m_shader);
+	}
+}
+
+const char* Shader::GetValueTypeString(GLenum a_type)
+{
+	switch (a_type)
+	{
+	case GL_FLOAT:
+		return "float";
+	case GL_FLOAT_VEC2:
+		return "vec2";
+	case GL_FLOAT_VEC3:
+		return "vec3";
+	case GL_FLOAT_VEC4:
+		return "vec4";
+	case GL_DOUBLE:
+		return "double";
+	case GL_INT:
+		return "int";
+	case GL_UNSIGNED_INT:
+		return "unsigned int";
+	case GL_BOOL:
+		return "bool";
+	case GL_FLOAT_MAT2:
+		return "mat2";
+	case GL_FLOAT_MAT3:
+		return "mat3";
+	case GL_FLOAT_MAT4:
+		return "mat4";
+	default:
+		return "?";
 	}
 }
