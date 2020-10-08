@@ -1,5 +1,11 @@
-﻿  Shader.cpp
-C:\Users\Liam\Documents\Development\ProjectP\src\Shader.cpp(94,10): warning C4834: discarding return value of function with 'nodiscard' attribute
-C:\Users\Liam\Documents\Development\ProjectP\src\Shader.cpp(302,2): warning C4244: 'argument': conversion from 'float' to 'glm::vec<3,float,glm::packed_highp>::length_type', possible loss of data
-C:\Users\Liam\Documents\Development\ProjectP\src\Shader.cpp(307,2): warning C4244: 'argument': conversion from 'float' to 'glm::vec<4,float,glm::packed_highp>::length_type', possible loss of data
+﻿  Application.cpp
+C:\Users\Liam\Documents\Development\ProjectP\src\Camera.h(63,20): warning C4390: ';': empty controlled statement found; is this the intent?
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(219,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(347,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(348,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(354,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(355,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(356,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(357,12): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\Liam\Documents\Development\ProjectP\src\Application.cpp(99): warning C4715: 'Application::StartUp': not all control paths return a value
   ProjectP.vcxproj -> C:\Users\Liam\Documents\Development\ProjectP\bin\x64\Debug\ProjectP.exe

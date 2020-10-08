@@ -198,10 +198,14 @@ void Shader::UnBind() const
 
 void Shader::BindAttribLocation(unsigned int a_location, const char* a_name)
 {
+	/* Helper Function, Is the same as stating (location = ) in the Vertex Shader */
+	glBindAttribLocation(m_handle, a_location, a_name);
 }
 
 void Shader::BindFragDataLocation(unsigned int a_location, const char* a_name)
 {
+	/* Helper Function, Is the same as stating (location = ) in the Frag Shader */
+	glBindFragDataLocation(m_handle, a_location, a_name);
 }
 
 void Shader::PrintActiveAttribs()

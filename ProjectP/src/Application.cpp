@@ -100,9 +100,6 @@ int Application::StartUp(void)
 
 int Application::Update()
 {
-	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Top, Far, Near) */
-	glm::mat4 m_proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -90.0f, 500.0f);
-
 	//glm::mat4 m_persProj = glm::perspective(glm::radians(fov), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 1000.0f);
 	/* View Matrix */
 	//glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
@@ -111,14 +108,27 @@ int Application::Update()
 	//Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
 	//Shader m_colorShader("Shaders/VertexShaderPrac.vert", "Shaders/FragmentShaderPrac.frag");
 
+	/* Renderer */
+	Renderer m_renderer;
+	/* New Geometry Class */
+	Geometry m_geometry;
+	/* Shader Objects */
 	Shader m_shader;
 	Shader m_colorShader;
+	Shader m_modelShader;
+	Shader m_cowModelShader;
 
 	m_shader.CompileShader("Shaders/ShaderVertTest.vert");
 	m_shader.CompileShader("Shaders/ShaderFragTest.frag");
 
 	m_colorShader.CompileShader("Shaders/BlobShader.vert");
 	m_colorShader.CompileShader("Shaders/BlobShader.frag");
+
+	m_modelShader.CompileShader("Shaders/ModelShaderVS.vert");
+	m_modelShader.CompileShader("Shaders/ModelShaderFS.frag");
+	
+	m_cowModelShader.CompileShader("Shaders/CowModelShaderVS.vert");
+	m_cowModelShader.CompileShader("Shaders/CowModelShaderFS.frag");
 
 	/* Binds and UnBinds the Shader */
 	m_shader.Link();
@@ -137,6 +147,22 @@ int Application::Update()
 	m_colorShader.PrintActiveUniforms();
 	m_colorShader.PrintActiveAttribs();
 
+	Model m_cowModelLoad("Models/Cow Model/Statuette.obj");
+	m_cowModelShader.Link();
+	m_cowModelShader.Validate();
+	m_cowModelShader.Bind();
+	m_cowModelShader.UnBind();
+	m_cowModelShader.PrintActiveUniforms();
+	m_cowModelShader.PrintActiveAttribs();
+
+	Model m_modelLoad("Models/Backpack Model/backpack.obj");
+	m_modelShader.Link();
+	m_modelShader.Validate();
+	m_modelShader.Bind();
+	m_modelShader.UnBind();
+	m_modelShader.PrintActiveUniforms();
+	m_modelShader.PrintActiveAttribs();
+
 	/* Texture Location */
 	Texture m_texture("Textures/Future City.png");
 	Texture m_textuerTwo("Textures/Trying.png");
@@ -144,9 +170,9 @@ int Application::Update()
 	/* Binds the Texture */
 	/* If no argument was put in, it is automatically 0 */
 	/* Assigns Texture to Slot 0 */
-	m_texture.Bind(1);
+	m_texture.Bind(3);
 	/* Binds to Texture Slot 1 */
-	m_textuerTwo.Bind(0);
+	m_textuerTwo.Bind(2);
 
 	/* IMGUI Setup */
 	const char* glsl_version = "#version 450";
@@ -163,17 +189,18 @@ int Application::Update()
 	glm::vec3 m_translationA(300.0f, 0.0f, 300.0f);
 	glm::vec3 m_translationB(500.0f, 0.0f, 200.0f);
 	glm::vec3 m_translationC(100.0f, 0.0f, 100.0f);
+	glm::vec3 m_translationD(100.0f, 0.0f, 100.0f);
+	glm::vec3 m_translationE(500.0f, 50.0f, 100.0f);
 
-	/* Renderer */
-	Renderer m_renderer;
-
-	/* New Geometry Class */
-	Geometry m_geometry;
-
-	bool m_buttonPressed = false;
+	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Top, Far, Near) */
+	glm::mat4 m_proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -90.0f, 500.0f);
 
 	/* Passes through the Screen Parameters (Since I dont know a better way this will do for now) */
 	m_camera.SetScreenDimensions(SCR_HEIGHT, SCR_WIDTH);
+
+	stbi_set_flip_vertically_on_load(true);
+
+	bool m_buttonPressed = false;
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -218,7 +245,7 @@ int Application::Update()
 			/* (In OpenGL its Projection View Model) */
 			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
 			m_shader.Bind();
-			m_shader.SetUniform1i("u_Texture", 1);
+			m_shader.SetUniform1i("u_Texture", 3);
 			m_shader.SetUniformMat4f("u_MVP", m_mvp);
 			m_geometry.GenerateCube();
 		}
@@ -228,6 +255,8 @@ int Application::Update()
 			/* Edit 1 float using a slider from 0.0f to 960.0f */
 			ImGui::SliderFloat3("Translation A", &m_translationA.x, 0.0f, 960.0f);
 			ImGui::SliderFloat3("Translation B", &m_translationB.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation D", &m_translationD.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation E", &m_translationE.x, 0.0f, 960.0f);
 			if (m_buttonPressed)
 			{
 				ImGui::SliderFloat3("Translation C", &m_translationC.x, 0.0f, 960.0f);
@@ -249,9 +278,27 @@ int Application::Update()
 			/* (In OpenGL its Projection View Model) */
 			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
 			m_shader.Bind();
-			m_shader.SetUniform1i("u_Texture", 0);
+			m_shader.SetUniform1i("u_Texture", 2);
 			m_shader.SetUniformMat4f("u_MVP", m_mvp);
 			m_geometry.GenerateCube();
+		}
+
+		{
+			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationD);
+			m_model = glm::scale(m_model, glm::vec3(20.0f, 20.0f, 20.0f));
+			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
+			m_modelShader.Bind();
+			m_modelShader.SetUniformMat4f("u_MVP", m_mvp);
+			m_modelLoad.DrawModel(m_modelShader);
+		}
+
+		{
+			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationE);
+			m_model = glm::scale(m_model, glm::vec3(10.0f, 10.0f, 10.0f));
+			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
+			m_cowModelShader.Bind();
+			m_cowModelShader.SetUniformMat4f("u_MVP", m_mvp);
+			m_cowModelLoad.DrawModel(m_modelShader);
 		}
 
 		ImGui::Render();
@@ -332,12 +379,13 @@ void MouseScrollCallback(GLFWwindow* a_window, double a_XoffSet, double a_yOffSe
 
 std::string ErrorSourceToString(GLenum a_source)
 {
+	/* Switch Statement that contins the source information of the error */
 	std::string m_errorStr;
 
 	switch (a_source)
 	{
 	case GL_DEBUG_SOURCE_API:
-		m_errorStr = "OPENGL_API_ERROR: ";
+		std::cout << "OPENGL_API_ERROR: ";
 		break;
 	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
 		m_errorStr = "WINDOWS_API_ERROR: ";
@@ -358,6 +406,7 @@ std::string ErrorSourceToString(GLenum a_source)
 
 std::string ErrorTypeToString(GLenum a_source)
 {
+	/* Switch Statement that contins the type information of the error */
 	std::string m_errorStr;
 
 	switch (a_source)
@@ -396,24 +445,22 @@ std::string ErrorTypeToString(GLenum a_source)
 
 std::string ErrorSeverityToString(GLenum a_source)
 {
+	/* Switch Statement that contins the severity information of the error */
 	std::string m_errorStr;
 
 	switch (a_source)
 	{
-	case GL_DEBUG_SEVERITY_HIGH:
-		m_errorStr = "HIGH SEVERITY: ";
+	case GL_DEBUG_SEVERITY_HIGH:  std::cout << "HIGH SEVERITY";
 		break;
-	case GL_DEBUG_SEVERITY_MEDIUM:
-		m_errorStr = "MEDIUM_SEVERITY: ";
+	case GL_DEBUG_SEVERITY_MEDIUM: std::cout << "MEDIUM_SEVERITY";
 		break;
-	case GL_DEBUG_SEVERITY_LOW:
-		m_errorStr = "LOW_SEVERITY: ";
+	case GL_DEBUG_SEVERITY_LOW: std::cout << "LOW_SEVERITY";
 		break;
-	case GL_DEBUG_SEVERITY_NOTIFICATION:
-		m_errorStr = "DEBUG_NOTIFICATION: ";
+	case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "DEBUG_NOTIFICATION";
 		break;
 	}
 	std::cout << std::endl;
+
 	return m_errorStr;
 }
 
@@ -421,15 +468,67 @@ void DebugCallBack(GLenum a_source, GLenum a_type, GLuint a_ID,
 	GLenum a_severity, GLsizei a_length, const GLchar* a_message,
 	const void* a_param)
 {
+	/* Debug Callback Funtion for OpenGL (ignoring some ID codes due to spam) */
 	if (a_ID == 131169 || a_ID == 131185 || a_ID == 131218 || a_ID == 131204) return;
 	
 	std::cout << "-----------------------------------" << std::endl;
 	std::cout << "Debug_Message (" << a_ID << "): " << a_message << std::endl;
 
 	//Convert GLenum params into strings
-	std::string m_sourceStr = ErrorSourceToString(a_source);
-	std::string m_typeStr = ErrorTypeToString(a_type);
-	std::string m_severityStr = ErrorSeverityToString(a_severity);
+	//std::string m_sourceStr = ErrorSeverityToString(a_source);
+	//std::string m_typeStr = ErrorTypeToString(a_type);
+	//std::string m_severityStr = ErrorSeverityToString(a_severity);
+	/* Fix Later */
 
-	printf("%s:%s[%s] (%d): %s", m_sourceStr, m_typeStr, m_severityStr, a_ID, a_message);
+
+	switch (a_severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH: std::cout << "SEVERITY: HIGH SEVERITY";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM: std::cout << "SEVERITY: MEDIUM_SEVERITY";
+		break;
+	case GL_DEBUG_SEVERITY_LOW: std::cout << "SEVERITY: LOW_SEVERITY";
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "SEVERITY: DEBUG_NOTIFICATION";
+		break;
+	}
+	std::cout << std::endl;
+	switch (a_type)
+	{
+	case GL_DEBUG_TYPE_ERROR: std::cout << "TYPE: ERROR";
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "TYPE: DEPRECIATED_ERROR";
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: std::cout << "TYPE: UNDERFINED_ERROR";
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY: std::cout << "TYPE: PORTABILITY_ERROR";
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE: std::cout << "TYPE: PERFORMANCE_ERROR";
+		break;
+	case GL_DEBUG_TYPE_MARKER: std::cout << "TYPE: ANNOTAION";
+		break;
+	case GL_DEBUG_TYPE_PUSH_GROUP: std::cout << "TYPE: DEBUG_GROUP_PUSH";
+		break;
+	case GL_DEBUG_TYPE_POP_GROUP: std::cout << "TYPE: DEBUG_GROUP_POP";
+		break;
+	case GL_DEBUG_TYPE_OTHER: std::cout << "TYPE: OTHER_MESSAGES";
+		break;
+	}
+	std::cout << std::endl;
+	switch (a_source)
+	{
+	case GL_DEBUG_SOURCE_API: std::cout << "SOURCE: OPENGL_API_ERROR";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM: std::cout << "SOURCE: WINDOWS_API_ERROR";
+		break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY: std::cout << "SOURCE: THIRD_PARTY_ERROR";
+		break;
+	case GL_DEBUG_SOURCE_APPLICATION: std::cout << "SOURCE: APPLICATION_ERROR";
+		break;
+	case GL_DEBUG_SOURCE_OTHER: std::cout << "SOURCE: OTHER_SOURCE_ERROR";
+		break;
+	}
+	std::cout << std::endl;
+
+	//printf(("%s:%s[%s] (%d): %s"), a_source, a_type, a_severity, a_ID, a_message);
 }

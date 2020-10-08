@@ -12,6 +12,7 @@
 /* This Class holds the ID of the Shader Program. */
 /* It also uses C++ filestreams to read the data from the Vert and Frag file into string objects */
 
+/* Custom Exception Class for Errors */
 class GLSLProgramException : public std::runtime_error
 {
 public:
@@ -19,7 +20,7 @@ public:
 		: std::runtime_error(msg) {}
 };
 
-
+/* Various Shader Types */
 namespace GLSLShader
 {
 	enum GLSLShaderType
@@ -83,8 +84,8 @@ public:
 
 	/* Deletes the Shader Program */
 	void TerminateProgram();
+	void DetachAndDeleteShaders();
 
-	std::string LoadShaderAsString(const char* a_fileName);
 
 
 
@@ -102,8 +103,7 @@ private:
 	int GetUniformLocation(const std::string& a_name);
 	/* Holds the Uniforms Cache Location */
 	std::unordered_map<std::string, int> m_UniformLocationCache;
-
-	void DetachAndDeleteShaders();
+	std::string LoadShaderAsString(const char* a_fileName);
 
 	const char *GetValueTypeString(GLenum a_type);
 };

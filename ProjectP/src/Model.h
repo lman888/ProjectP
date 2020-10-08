@@ -13,7 +13,7 @@ class Model
 {
 public:
 
-	Model(char* a_path)
+	Model(const char* a_path)
 	{
 		LoadModel(a_path);
 	}

@@ -4,7 +4,7 @@ void Model::DrawModel(Shader& a_shader)
 {
     /* Loops over each Mesh to call their draw function */
     for (unsigned int i = 0; i < m_meshes.size(); i++)
-        m_meshes[i].DrawModel(a_shader);
+        m_meshes[i].Draw(a_shader);
 }
 
 void Model::LoadModel(std::string a_path)
@@ -121,15 +121,16 @@ std::vector<MyTexture> Model::LoadMaterialTextures(aiMaterial* a_mat, aiTextureT
         if (!skip)
         {
             MyTexture texture;
-            texture.m_id = TextureFromFile(str.C_Str(), m_directory);
+            texture.m_ID = TextureFromFile(str.C_Str(), m_directory);
             texture.m_type = a_typeName;
             texture.m_path = str.C_Str();
             textures.push_back(texture);
             m_texturesLoaded.push_back(texture);
         }
+
+        return textures;
     }
 
-    return textures;
 }
 
 unsigned int Model::TextureFromFile(const char* a_path, const std::string& a_directory)
