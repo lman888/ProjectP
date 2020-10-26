@@ -77,7 +77,7 @@ public:
 	void SetUniformMat3f(const std::string& a_name, glm::mat3& a_value);
 	void SetUniform1b(const std::string& a_name, bool a_value);
 	void SetUniformVec3f(const std::string& a_name, const glm::vec3& a_value);
-	void SetUniformVec4f(const std::string& a_name, glm::vec4& a_value);
+	void SetUniformVec4f(const std::string& a_name, const glm::vec4& a_value);
 
 	void PracticePipleLine();
 	void UniformBlock();

@@ -4,6 +4,8 @@
 #include "Extra/imgui/imgui_impl_glfw.h"
 #include "Extra/imgui/imgui_impl_opengl3.h"
 
+#include "Extra/Remotery/lib/Remotery.h"
+
 #include "GLAD/glad.h"
 #include <gl/GL.h>
 #include "GLFW/glfw3.h"
@@ -43,5 +45,10 @@ protected:
 
 
 private:
+
+	// You need only do this once per program.
+	rmtSettings* m_settings = &rmtSettings();
+	Remotery* rmt;
+	rmtError m_rmtError;
 
 };

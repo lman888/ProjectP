@@ -1,5 +1,7 @@
 #include "Renderer.h"
 
+#include "Extra/Remotery/lib/Remotery.h"
+
 void GLClearError()
 {
 	while (glGetError() != GL_NO_ERROR);
@@ -37,5 +39,16 @@ void Renderer::Draw(const VertexArray& a_va, const IndexBuffer& a_ib /*const Sha
 	a_ib.Bind();
 
 	/* Draws the Shape we defined with our Buffers */
-	GLCall(glDrawElements(GL_TRIANGLES, a_ib.GetCount(), GL_UNSIGNED_INT, 0));
+	// Scoped begin/end for C++
+	{
+		rmt_ScopedOpenGLSample(ScopedSample);
+		rmt_BeginCPUSample(Object_Render_Time, 0);
+		rmt_LogText("Object Render Time");
+		// ... OpenGL code ...
+		GLCall(glDrawElements(GL_TRIANGLES, a_ib.GetCount(), GL_UNSIGNED_INT, 0));
+
+		rmt_LogText("End Render Sample Time");
+		rmt_EndCPUSample();
+	}
+
 }

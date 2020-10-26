@@ -1,5 +1,4 @@
 #include "Shader.h"
-
 #include "Renderer.h"
 
 namespace GLSLShaderInfo
@@ -65,6 +64,10 @@ void Shader::CompileShader(const std::string& a_source, GLSLShader::GLSLShaderTy
 
 	unsigned int m_shaderHandle = glCreateShader(a_type);
 
+	if (a_source == "")
+	{
+		std::cout << a_fileName << ": " << " IS::INCORRECT" << std::endl;
+	}
 	const char* m_shaderCode = a_source.c_str();
 	glShaderSource(m_shaderHandle, 1, &m_shaderCode, NULL);
 	glCompileShader(m_shaderHandle);
@@ -306,7 +309,7 @@ void Shader::SetUniformVec3f(const std::string& a_name, const glm::vec3& a_value
 	GLCall(glUniform3fv(GetUniformLocation(a_name), 1, &a_value[0.0f]));
 }
 
-void Shader::SetUniformVec4f(const std::string& a_name, glm::vec4& a_value)
+void Shader::SetUniformVec4f(const std::string& a_name, const glm::vec4& a_value)
 {
 	GLCall(glUniform4fv(GetUniformLocation(a_name), 1, &a_value[0.0f]));
 }

@@ -1,7 +1,8 @@
 #include "IndexBuffer.h"
 #include "Renderer.h"
 
-IndexBuffer::IndexBuffer(const unsigned int* a_data, unsigned int a_count)
+
+IndexBuffer::IndexBuffer(unsigned int* a_data, unsigned int a_count)
 	: m_Count(a_count)
 {
 	/* Generates a Buffer ID using the glGenBuffers (VBO - Vertex Buffer Object) */

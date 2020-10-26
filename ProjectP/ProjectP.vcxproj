@@ -80,6 +80,7 @@
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin\intermediates\$(Platform)\$(Configuration)\</IntDir>
     <LibraryPath>$(SolutionDir)Dependencies\GLFW\lib-vc2019;$(SolutionDir)Dependencies\Assimp-3.18\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)src\Extra\Remotery\lib;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -163,6 +164,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Dependencies\GLAD\src\glad.c" />
+    <ClCompile Include="src\Extra\Remotery\lib\Remotery.c" />
     <ClCompile Include="src\Geometry.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Mesh.cpp" />
@@ -183,6 +185,7 @@
     <ClCompile Include="src\VertexArray.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Extra\Remotery\lib\Remotery.h" />
     <ClInclude Include="src\Geometry.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Mesh.h" />
@@ -242,6 +245,9 @@
     <Image Include="Textures\container.jpg" />
     <Image Include="Textures\WallPaper.jpg" />
     <Image Include="Textures\WallPaper2.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Extra\Remotery\lib\RemoteryMetal.mm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

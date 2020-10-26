@@ -1,5 +1,7 @@
 #include "Mesh.h"
 
+#include "Extra/Remotery/lib/Remotery.h"
+
 Mesh::Mesh(std::vector<Vertex> a_vertices, std::vector<unsigned int> a_indices, std::vector<MyTexture> a_textures)
 {
 	/* Sets the required Vertices, Indices and Textures */
@@ -33,6 +35,7 @@ void Mesh::Draw(Shader& a_shader)
 		a_shader.SetUniform1i((m_name + m_number).c_str(), i);
 		glBindTexture(GL_TEXTURE_2D, m_textures[i].m_ID);
 	}
+
 	glActiveTexture(GL_TEXTURE0);
 
 	/* Draw Mesh */

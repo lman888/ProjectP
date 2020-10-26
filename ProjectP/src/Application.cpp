@@ -1,4 +1,5 @@
 #include "Application.h"
+#include <signal.h>
 
 void FramBufferSizeCallBack(GLFWwindow* a_window, int a_width, int a_height);
 void ProcessInput(GLFWwindow* a_window);
@@ -30,16 +31,32 @@ float m_deltaTime = 0.0f;
 /* Time of last frame */
 float m_lastFrame = 0.0f;
 
+void AggregrateFunc()
+{
+	rmt_BeginCPUSample(aggregate, RMTSF_Aggregate);
+	rmt_EndCPUSample();
+}
+
+void RecursiveFunction(int a_depth)
+{
+	rmt_BeginCPUSample(recursive, RMTSF_Recursive);
+
+	if (a_depth < 5)
+	{
+		RecursiveFunction(a_depth + 1);
+	}
+
+	rmt_EndCPUSample();
+}
+
 int Application::StartUp(void)
 {
-
 	/* Initializes and Configures GLFW */
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_ANY_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-	
 
 	if (!glfwInit())
 	{
@@ -100,14 +117,6 @@ int Application::StartUp(void)
 
 int Application::Update()
 {
-	//glm::mat4 m_persProj = glm::perspective(glm::radians(fov), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 1000.0f);
-	/* View Matrix */
-	//glm::mat4 m_view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
-
-	/* Pass in the Shader Files */
-	//Shader m_shader("Shaders/ShaderVertTest.vert", "Shaders/ShaderFragTest.frag");
-	//Shader m_colorShader("Shaders/VertexShaderPrac.vert", "Shaders/FragmentShaderPrac.frag");
-
 	/* Renderer */
 	Renderer m_renderer;
 	/* New Geometry Class */
@@ -115,28 +124,33 @@ int Application::Update()
 	/* Shader Objects */
 	Shader m_shader;
 	Shader m_colorShader;
-	Shader m_modelShader;
 	Shader m_cowModelShader;
+	Shader m_PhongShader;
 
 	m_shader.CompileShader("Shaders/ShaderVertTest.vert");
 	m_shader.CompileShader("Shaders/ShaderFragTest.frag");
 
 	m_colorShader.CompileShader("Shaders/BlobShader.vert");
 	m_colorShader.CompileShader("Shaders/BlobShader.frag");
-
-	m_modelShader.CompileShader("Shaders/ModelShaderVS.vert");
-	m_modelShader.CompileShader("Shaders/ModelShaderFS.frag");
 	
 	m_cowModelShader.CompileShader("Shaders/CowModelShaderVS.vert");
 	m_cowModelShader.CompileShader("Shaders/CowModelShaderFS.frag");
 
-	/* Binds and UnBinds the Shader */
+	m_PhongShader.CompileShader("Shaders/PhongLightingVert.vert");
+	m_PhongShader.CompileShader("Shaders/PhongLightingFrag.frag");
+
+	/* Binds and Un-Binds the Phong Shader */
+	m_PhongShader.Link();
+	m_PhongShader.Validate();
+	m_PhongShader.Bind();
+	m_PhongShader.UnBind();
+	m_PhongShader.PrintActiveUniforms();
+
+	/* Binds and Un-Binds the Shader */
 	m_shader.Link();
 	m_shader.Validate();
 	m_shader.Bind();
 	m_shader.UnBind();
-	m_shader.PrintActiveUniforms();
-	m_shader.PrintActiveAttribs();
 
 	/* Binds and Unbinds the Shader */
 	m_colorShader.Link();
@@ -144,24 +158,12 @@ int Application::Update()
 	m_colorShader.Bind();
 	m_colorShader.UniformBlock();
 	m_colorShader.UnBind();
-	m_colorShader.PrintActiveUniforms();
-	m_colorShader.PrintActiveAttribs();
 
 	Model m_cowModelLoad("Models/Cow Model/Statuette.obj");
 	m_cowModelShader.Link();
 	m_cowModelShader.Validate();
 	m_cowModelShader.Bind();
 	m_cowModelShader.UnBind();
-	m_cowModelShader.PrintActiveUniforms();
-	m_cowModelShader.PrintActiveAttribs();
-
-	Model m_modelLoad("Models/Backpack Model/backpack.obj");
-	m_modelShader.Link();
-	m_modelShader.Validate();
-	m_modelShader.Bind();
-	m_modelShader.UnBind();
-	m_modelShader.PrintActiveUniforms();
-	m_modelShader.PrintActiveAttribs();
 
 	/* Texture Location */
 	Texture m_texture("Textures/Future City.png");
@@ -185,12 +187,20 @@ int Application::Update()
 	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
+
 	/* Objects Initial Position */
 	glm::vec3 m_translationA(300.0f, 0.0f, 300.0f);
 	glm::vec3 m_translationB(500.0f, 0.0f, 200.0f);
 	glm::vec3 m_translationC(100.0f, 0.0f, 100.0f);
 	glm::vec3 m_translationD(100.0f, 0.0f, 100.0f);
 	glm::vec3 m_translationE(500.0f, 50.0f, 100.0f);
+	glm::vec3 m_lightIntensity(0.3f, 0.5f, 0.7f);
+	glm::vec3 m_diffRefl(0.3f, 0.5f, 0.7f);
+	glm::vec4 m_lightPos(5.0f, 5.0f, 5.0f, 5.0f);
+
+	float m_radius = 10;
+	int m_slices = 10;
+	int m_stacks = 10;
 
 	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Top, Far, Near) */
 	glm::mat4 m_proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -90.0f, 500.0f);
@@ -201,6 +211,23 @@ int Application::Update()
 	stbi_set_flip_vertically_on_load(true);
 
 	bool m_buttonPressed = false;
+
+	m_settings->malloc;
+	m_settings->free;
+	m_settings->mm_context;
+
+	m_settings->input_handler;
+	m_settings->input_handler_context;
+
+	// Create the main instance of Remotery.
+	rmt_BindOpenGL();
+
+	m_rmtError = rmt_CreateGlobalInstance(&rmt);
+
+	if (RMT_ERROR_NONE != m_rmtError) {
+		printf("Error launching Remotery %d\n", m_rmtError);
+		return -1;
+	}
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(m_window))
@@ -224,6 +251,9 @@ int Application::Update()
 
 		m_camera.CameraInputs(m_window, m_cameraSpeedValue, m_deltaTime);
 
+		rmt_BeginOpenGLSample();
+		rmt_BeginCPUSample(Object_Render_Loop, 0);
+		rmt_LogText("Main Object Loop");
 		/* Renders Two objects (Exact same object) */
 		{
 			/* Model Matrix */
@@ -257,9 +287,15 @@ int Application::Update()
 			ImGui::SliderFloat3("Translation B", &m_translationB.x, 0.0f, 960.0f);
 			ImGui::SliderFloat3("Translation D", &m_translationD.x, 0.0f, 960.0f);
 			ImGui::SliderFloat3("Translation E", &m_translationE.x, 0.0f, 960.0f);
+			ImGui::SliderFloat("Radius", &m_radius, 10.0f, 100.0f);
+			ImGui::SliderInt("Slices", &m_slices, 10, 100);
+			ImGui::SliderInt("Slaces", &m_stacks, 10, 100);
 			if (m_buttonPressed)
 			{
 				ImGui::SliderFloat3("Translation C", &m_translationC.x, 0.0f, 960.0f);
+				ImGui::SliderFloat4("Light Object", &m_lightPos.x, 0.0f, 960.0f);
+				ImGui::SliderFloat3("Light Intensity", &m_lightIntensity.x, 0.0f, 10.0f);
+				ImGui::SliderFloat3("Light Reflection", &m_diffRefl.x, 0.0f, 10.0f);
 			}
 			ImGui::SliderFloat("Camera Speed", &m_cameraSpeedValue, 0.0f, 500.0f);
 			ImGui::SliderFloat("Camera Sensitivity", &m_sensitivity, 0.01f, 1.0f);
@@ -274,22 +310,20 @@ int Application::Update()
 		if (m_buttonPressed)
 		{
 			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationC);
+			//m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 			/* Model View Projection Calculation */
 			/* (In OpenGL its Projection View Model) */
-			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
-			m_shader.Bind();
-			m_shader.SetUniform1i("u_Texture", 2);
-			m_shader.SetUniformMat4f("u_MVP", m_mvp);
-			m_geometry.GenerateCube();
-		}
-
-		{
-			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationD);
-			m_model = glm::scale(m_model, glm::vec3(20.0f, 20.0f, 20.0f));
-			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
-			m_modelShader.Bind();
-			m_modelShader.SetUniformMat4f("u_MVP", m_mvp);
-			m_modelLoad.DrawModel(m_modelShader);
+			glm::mat4 m_mv = m_camera.GetViewMatrix() * m_model;
+			glm::mat4 m_projView = m_camera.GetProjView();
+			glm::mat3 m_normMatrix = glm::mat3(glm::vec3(m_mv[0]), glm::vec3(m_mv[1]), glm::vec3(m_mv[2]));
+			m_PhongShader.Bind();
+			m_PhongShader.SetUniformVec3f("u_kd", m_diffRefl);
+			m_PhongShader.SetUniformVec3f("u_ld", m_lightIntensity);
+			m_PhongShader.SetUniformVec4f("u_lightPosition", m_camera.GetViewMatrix() * m_lightPos);
+			m_PhongShader.SetUniformMat4f("u_modelViewMatrix", m_mv);
+			m_PhongShader.SetUniformMat3f("u_normalMatrix", m_normMatrix);
+			m_PhongShader.SetUniformMat4f("u_MVP", m_projView * m_mv);
+			m_geometry.GenerateSphere(m_radius, (unsigned int)m_slices, (unsigned int)m_stacks);
 		}
 
 		{
@@ -298,8 +332,11 @@ int Application::Update()
 			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
 			m_cowModelShader.Bind();
 			m_cowModelShader.SetUniformMat4f("u_MVP", m_mvp);
-			m_cowModelLoad.DrawModel(m_modelShader);
+			m_cowModelLoad.DrawModel(m_cowModelShader);
+
 		}
+		rmt_EndCPUSample();
+		
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -319,6 +356,8 @@ int Application::Update()
 
 void Application::Terminate()
 {
+	rmt_DestroyGlobalInstance(rmt);
+	rmt_UnbindOpenGL();
 	glfwTerminate();
 }
 
