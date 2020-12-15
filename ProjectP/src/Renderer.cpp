@@ -9,6 +9,7 @@ void GLClearError()
 
 bool GLLogCall(const char* a_function, const char* a_file, int a_line)
 {
+
 	if (GLenum error = glGetError())
 	{
 		std::cout << "[OpenGL Error] (" << error << "): " << a_function <<
@@ -41,14 +42,8 @@ void Renderer::Draw(const VertexArray& a_va, const IndexBuffer& a_ib /*const Sha
 	/* Draws the Shape we defined with our Buffers */
 	// Scoped begin/end for C++
 	{
-		rmt_ScopedOpenGLSample(ScopedSample);
-		rmt_BeginCPUSample(Object_Render_Time, 0);
-		rmt_LogText("Object Render Time");
 		// ... OpenGL code ...
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		GLCall(glDrawElements(GL_TRIANGLES, a_ib.GetCount(), GL_UNSIGNED_INT, 0));
-
-		rmt_LogText("End Render Sample Time");
-		rmt_EndCPUSample();
 	}
-
 }

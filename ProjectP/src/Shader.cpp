@@ -95,7 +95,9 @@ void Shader::CompileShader(const std::string& a_source, GLSLShader::GLSLShaderTy
 			glGetShaderInfoLog(m_shaderHandle, m_length, &m_written, &m_log[0]);
 
 			m_msg + m_log;
+			std::cout << m_log;
 		}
+		std::cout << m_msg;
 		throw GLSLProgramException(m_msg);
 	}
 	else
@@ -294,7 +296,12 @@ void Shader::SetUniform4f(const std::string& a_name, float v0, float v1, float v
 	GLCall(glUniform4f(GetUniformLocation(a_name), v0, v1, v2, v3));
 }
 
-void Shader::SetUniformMat3f(const std::string& a_name, glm::mat3& a_value)
+void Shader::SetUniform3f(const std::string& a_name, float v0, float v1, float v2)
+{
+	GLCall(glUniform3f(GetUniformLocation(a_name), v0, v1, v2));
+}
+
+void Shader::SetUniformMat3f(const std::string& a_name, const glm::mat3& a_value)
 {
 	GLCall(glUniformMatrix3fv(GetUniformLocation(a_name), 1, GL_FALSE, &a_value[0][0]));
 }

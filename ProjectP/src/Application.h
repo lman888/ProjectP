@@ -46,9 +46,6 @@ protected:
 
 private:
 
-	// You need only do this once per program.
-	rmtSettings* m_settings = &rmtSettings();
 	Remotery* rmt;
-	rmtError m_rmtError;
 
 };

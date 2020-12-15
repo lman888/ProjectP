@@ -117,6 +117,11 @@ int Application::StartUp(void)
 
 int Application::Update()
 {
+
+	// You need only do this once per program.
+	rmtSettings m_settings = rmtSettings();
+	rmtError m_rmtError;
+
 	/* Renderer */
 	Renderer m_renderer;
 	/* New Geometry Class */
@@ -126,6 +131,12 @@ int Application::Update()
 	Shader m_colorShader;
 	Shader m_cowModelShader;
 	Shader m_PhongShader;
+	Shader m_PhongReflectionShader;
+	Shader m_PhongReflectionShaderMark2;
+	Shader m_PerfLookShader;
+	Shader m_PhondTwoSidedShadingSub;
+	Shader m_multipleLightsShader;
+	Shader m_stormTrooperModelShader;
 
 	m_shader.CompileShader("Shaders/ShaderVertTest.vert");
 	m_shader.CompileShader("Shaders/ShaderFragTest.frag");
@@ -136,15 +147,41 @@ int Application::Update()
 	m_cowModelShader.CompileShader("Shaders/CowModelShaderVS.vert");
 	m_cowModelShader.CompileShader("Shaders/CowModelShaderFS.frag");
 
+	m_stormTrooperModelShader.CompileShader("Shaders/CowModelShaderVS.vert");
+	m_stormTrooperModelShader.CompileShader("Shaders/CowModelShaderFS.frag");
+
 	m_PhongShader.CompileShader("Shaders/PhongLightingVert.vert");
 	m_PhongShader.CompileShader("Shaders/PhongLightingFrag.frag");
+
+	m_PhongReflectionShader.CompileShader("Shaders/PhongReflectionLighting.vert");
+	m_PhongReflectionShader.CompileShader("Shaders/PhongReflectionLighting.frag");
+
+	m_PhongReflectionShaderMark2.CompileShader("Shaders/PhongTwoSidedShadingSub.vert");
+	m_PhongReflectionShaderMark2.CompileShader("Shaders/PhongTwoSidedShadingSub.frag");
+
+	m_PerfLookShader.CompileShader("Shaders/PerforatedLookVert.vert");
+	m_PerfLookShader.CompileShader("Shaders/PerforatedLookFrag.frag");
+
+	m_multipleLightsShader.CompileShader("Shaders/MultipleLightShader.vert");
+	m_multipleLightsShader.CompileShader("Shaders/MultipleLightShader.frag");
+
+	/* Binds and Un-Binds the Phong Reflection Shader */
+	m_PhongReflectionShader.Link();
+	m_PhongReflectionShader.Validate();
+	m_PhongReflectionShader.Bind();
+	m_PhongReflectionShader.UnBind();
+
+	/* Binds and Un-Binds the Phong Reflection Mark 2 Shader */
+	m_PhongReflectionShaderMark2.Link();
+	m_PhongReflectionShaderMark2.Validate();
+	m_PhongReflectionShaderMark2.Bind();
+	m_PhongReflectionShaderMark2.UnBind();
 
 	/* Binds and Un-Binds the Phong Shader */
 	m_PhongShader.Link();
 	m_PhongShader.Validate();
 	m_PhongShader.Bind();
 	m_PhongShader.UnBind();
-	m_PhongShader.PrintActiveUniforms();
 
 	/* Binds and Un-Binds the Shader */
 	m_shader.Link();
@@ -159,11 +196,30 @@ int Application::Update()
 	m_colorShader.UniformBlock();
 	m_colorShader.UnBind();
 
+	/* Binds and Unbinds the Shader */
+	m_PerfLookShader.Link();
+	m_PerfLookShader.Validate();
+	m_PerfLookShader.Bind();
+	m_PerfLookShader.UnBind();
+
+	/* Links, Validates and Binds the Shader */
+	m_multipleLightsShader.Link();
+	m_multipleLightsShader.Validate();
+	m_multipleLightsShader.Bind();
+	m_multipleLightsShader.UnBind();
+
 	Model m_cowModelLoad("Models/Cow Model/Statuette.obj");
 	m_cowModelShader.Link();
 	m_cowModelShader.Validate();
 	m_cowModelShader.Bind();
 	m_cowModelShader.UnBind();
+
+	Model m_stormTrooperModel("Models/StormTrooper/Trooper.fbx");
+	m_stormTrooperModelShader.Link();
+	m_stormTrooperModelShader.Validate();
+	m_stormTrooperModelShader.Bind();
+	m_stormTrooperModelShader.UnBind();
+
 
 	/* Texture Location */
 	Texture m_texture("Textures/Future City.png");
@@ -176,6 +232,56 @@ int Application::Update()
 	/* Binds to Texture Slot 1 */
 	m_textuerTwo.Bind(2);
 
+	#pragma region Phong Lighting Settings
+
+	glm::vec4 m_worldLight = glm::vec4(5.0f, 5.0f, 2.0f, 1.0f);
+
+	m_PhongReflectionShader.Bind();
+	m_PhongReflectionShader.SetUniformVec3f("Material.u_kd", glm::vec3(0.9f, 0.5f, 0.3f));
+	m_PhongReflectionShader.SetUniformVec3f("Light.u_ld", glm::vec3(1.0f, 1.0f, 1.0f));
+	m_PhongReflectionShader.SetUniformVec4f("Light.u_position", m_camera.GetViewMatrix() * m_worldLight);
+	m_PhongReflectionShader.SetUniformVec3f("Material.u_ka", glm::vec3(0.9f, 0.5f, 0.3f));
+	m_PhongReflectionShader.SetUniformVec3f("Light.u_la", glm::vec3(0.4f, 0.4f, 0.4f));
+	m_PhongReflectionShader.SetUniformVec3f("Material.u_ks", glm::vec3(0.8f, 0.8f, 0.8f));
+	m_PhongReflectionShader.SetUniformVec3f("Light.u_ls", glm::vec3(1.0f, 1.0f, 1.0f));
+	m_PhongReflectionShader.SetUniform1f("Material.u_shininess", 100.0f);
+	m_PhongReflectionShader.UnBind();
+
+	#pragma endregion
+
+	#pragma region Multiple Light Shader Settings
+
+	m_multipleLightsShader.Bind();
+
+	float x, y;
+	for (int i = 0; i < 5; i++)
+	{
+		std::stringstream m_name;
+		m_name << "Lights[" << i << "].u_position";
+
+		x = 2.0f * cosf((glm::two_pi<float>() / 5) * i);
+		y = 2.0f * sinf((glm::two_pi<float>() / 5) * i);
+
+		m_multipleLightsShader.SetUniformVec4f(m_name.str().c_str(), m_camera.GetViewMatrix() * glm::vec4(x, 1.2f, y + 1.0f, 1.0f));
+	}
+
+	m_multipleLightsShader.SetUniformVec3f("Lights[0].u_l", glm::vec3(0.8f, 0.8f, 0.8f));
+	m_multipleLightsShader.SetUniformVec3f("Lights[1].u_l", glm::vec3(0.5f, 0.5f, 0.5f));
+	m_multipleLightsShader.SetUniformVec3f("Lights[2].u_l", glm::vec3(0.0f, 0.1f, 0.1f));
+	m_multipleLightsShader.SetUniformVec3f("Lights[3].u_l", glm::vec3(0.3f, 0.3f, 0.3f));
+	m_multipleLightsShader.SetUniformVec3f("Lights[4].u_l", glm::vec3(0.0f, 0.8f, 0.8f));
+													  
+													  
+	m_multipleLightsShader.SetUniformVec3f("Lights[0].u_la", glm::vec3(0.0f, 0.2f, 0.2f));
+	m_multipleLightsShader.SetUniformVec3f("Lights[1].u_la", glm::vec3(0.0f, 0.0f, 0.6f));
+	m_multipleLightsShader.SetUniformVec3f("Lights[2].u_la", glm::vec3(0.7f, 0.7f, 0.7f));
+	m_multipleLightsShader.SetUniformVec3f("Lights[3].u_la", glm::vec3(0.0f, 0.2f, 0.0f));
+	m_multipleLightsShader.SetUniformVec3f("Lights[4].u_la", glm::vec3(0.2f, 0.2f, 0.2f));
+
+	m_multipleLightsShader.UnBind();
+
+	#pragma endregion
+
 	/* IMGUI Setup */
 	const char* glsl_version = "#version 450";
 	IMGUI_CHECKVERSION();
@@ -187,20 +293,35 @@ int Application::Update()
 	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
-
 	/* Objects Initial Position */
 	glm::vec3 m_translationA(300.0f, 0.0f, 300.0f);
 	glm::vec3 m_translationB(500.0f, 0.0f, 200.0f);
 	glm::vec3 m_translationC(100.0f, 0.0f, 100.0f);
-	glm::vec3 m_translationD(100.0f, 0.0f, 100.0f);
 	glm::vec3 m_translationE(500.0f, 50.0f, 100.0f);
+	glm::vec3 m_translationF(100.0f, 50.0f, 600.0f);
+	glm::vec3 m_translationG(100.0f, 50.0f, 300.0f);
+	glm::vec3 m_translationH(200.0f, 50.0f, 300.0f);
+	glm::vec3 m_translationI(300.0f, 10.0f, 400.0f);
+	glm::vec3 m_translationJ(500.0f, 10.0f, 700.0f);
+	glm::vec3 m_translationK(700.0f, 10.0f, 700.0f);
 	glm::vec3 m_lightIntensity(0.3f, 0.5f, 0.7f);
 	glm::vec3 m_diffRefl(0.3f, 0.5f, 0.7f);
-	glm::vec4 m_lightPos(5.0f, 5.0f, 5.0f, 5.0f);
+	glm::vec3 m_teaPotrotation(10.0f);
+	glm::vec4 m_lightPos(5.0f, 5.0f, 5.0f, 1.0f);
+	glm::vec3 m_lidTransform(0.0f, 1.5f, 0.25f);
+	glm::vec3 m_lValue(0.0f, 2.0f, 3.0f);
+	glm::vec3 m_laValue(0.0f, 2.0f, 3.0f);
 
+	int m_sides = 20;
+	int m_rings = 20;
+
+	float m_outerRadius = 30;
+	float m_innerRadius = 30;
 	float m_radius = 10;
+
 	int m_slices = 10;
 	int m_stacks = 10;
+	int m_teaPotGrid = 13;
 
 	/* (Orthographic Projection) Maps all our Coords on a 2D plane (Left, Right, Bottom, Top, Far, Near) */
 	glm::mat4 m_proj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, -90.0f, 500.0f);
@@ -211,13 +332,15 @@ int Application::Update()
 	stbi_set_flip_vertically_on_load(true);
 
 	bool m_buttonPressed = false;
+	bool m_lightPropWindow = false;
+	float my_color[4];
 
-	m_settings->malloc;
-	m_settings->free;
-	m_settings->mm_context;
+	m_settings.malloc;
+	m_settings.free;
+	m_settings.mm_context;
 
-	m_settings->input_handler;
-	m_settings->input_handler_context;
+	m_settings.input_handler;
+	m_settings.input_handler_context;
 
 	// Create the main instance of Remotery.
 	rmt_BindOpenGL();
@@ -252,10 +375,13 @@ int Application::Update()
 		m_camera.CameraInputs(m_window, m_cameraSpeedValue, m_deltaTime);
 
 		rmt_BeginOpenGLSample();
-		rmt_BeginCPUSample(Object_Render_Loop, 0);
-		rmt_LogText("Main Object Loop");
+		rmt_BeginCPUSample(MainRenderLoop, 0);
+		rmt_LogText("Main Loop");
 		/* Renders Two objects (Exact same object) */
 		{
+			rmt_BeginOpenGLSample();
+			rmt_BeginCPUSample(QuadRender, 0);
+			rmt_LogText("Quad Render");
 			/* Model Matrix */
 			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationA);
 			m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
@@ -266,9 +392,13 @@ int Application::Update()
 			//m_colorShader.SetUniform1i("u_Texture", 1);
 			m_colorShader.SetUniformMat4f("u_MVP", m_mvp);
 			m_geometry.GenerateQuad();
+			rmt_EndCPUSample();
 		}
 
 		{
+			rmt_BeginOpenGLSample();
+			rmt_BeginCPUSample(CubeRender, 0);
+			rmt_LogText("Cube Render");
 			/* Model Matrix */
 			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationB);
 			/* Model View Projection Calculation */
@@ -278,6 +408,33 @@ int Application::Update()
 			m_shader.SetUniform1i("u_Texture", 3);
 			m_shader.SetUniformMat4f("u_MVP", m_mvp);
 			m_geometry.GenerateCube();
+			rmt_EndCPUSample();
+		}
+
+		{
+			rmt_BeginOpenGLSample();
+			rmt_BeginCPUSample(CowModelRender, 0);
+			rmt_LogText("Cow Model Render");
+			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationE);
+			m_model = glm::scale(m_model, glm::vec3(10.0f, 10.0f, 10.0f));
+			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
+			m_cowModelShader.Bind();
+			m_cowModelShader.SetUniformMat4f("u_MVP", m_mvp);
+			m_cowModelLoad.DrawModel(m_cowModelShader);
+			rmt_EndCPUSample();
+		}
+
+		{
+			rmt_BeginOpenGLSample();
+			rmt_BeginCPUSample(StormTrooper, 0);
+			rmt_LogText("Cow Model Render");
+			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationK);
+			m_model = glm::scale(m_model, glm::vec3(10.0f, 10.0f, 10.0f));
+			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
+			m_stormTrooperModelShader.Bind();
+			m_stormTrooperModelShader.SetUniformMat4f("u_MVP", m_mvp);
+			m_stormTrooperModel.DrawModel(m_stormTrooperModelShader);
+			rmt_EndCPUSample();
 		}
 
 		/* ImGui Window Render */
@@ -285,58 +442,198 @@ int Application::Update()
 			/* Edit 1 float using a slider from 0.0f to 960.0f */
 			ImGui::SliderFloat3("Translation A", &m_translationA.x, 0.0f, 960.0f);
 			ImGui::SliderFloat3("Translation B", &m_translationB.x, 0.0f, 960.0f);
-			ImGui::SliderFloat3("Translation D", &m_translationD.x, 0.0f, 960.0f);
 			ImGui::SliderFloat3("Translation E", &m_translationE.x, 0.0f, 960.0f);
-			ImGui::SliderFloat("Radius", &m_radius, 10.0f, 100.0f);
-			ImGui::SliderInt("Slices", &m_slices, 10, 100);
-			ImGui::SliderInt("Slaces", &m_stacks, 10, 100);
-			if (m_buttonPressed)
-			{
-				ImGui::SliderFloat3("Translation C", &m_translationC.x, 0.0f, 960.0f);
-				ImGui::SliderFloat4("Light Object", &m_lightPos.x, 0.0f, 960.0f);
-				ImGui::SliderFloat3("Light Intensity", &m_lightIntensity.x, 0.0f, 10.0f);
-				ImGui::SliderFloat3("Light Reflection", &m_diffRefl.x, 0.0f, 10.0f);
-			}
+
 			ImGui::SliderFloat("Camera Speed", &m_cameraSpeedValue, 0.0f, 500.0f);
 			ImGui::SliderFloat("Camera Sensitivity", &m_sensitivity, 0.01f, 1.0f);
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
 
-		if (ImGui::Button("Spawn Cube", ImVec2(100.0f, 30.0f)))
+		if (ImGui::Button("Spawn Light Objects", ImVec2(150.0f, 30.0f)))
 		{
 			m_buttonPressed = true;
 		};
 
 		if (m_buttonPressed)
 		{
-			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationC);
-			//m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-			/* Model View Projection Calculation */
-			/* (In OpenGL its Projection View Model) */
-			glm::mat4 m_mv = m_camera.GetViewMatrix() * m_model;
-			glm::mat4 m_projView = m_camera.GetProjView();
-			glm::mat3 m_normMatrix = glm::mat3(glm::vec3(m_mv[0]), glm::vec3(m_mv[1]), glm::vec3(m_mv[2]));
-			m_PhongShader.Bind();
-			m_PhongShader.SetUniformVec3f("u_kd", m_diffRefl);
-			m_PhongShader.SetUniformVec3f("u_ld", m_lightIntensity);
-			m_PhongShader.SetUniformVec4f("u_lightPosition", m_camera.GetViewMatrix() * m_lightPos);
-			m_PhongShader.SetUniformMat4f("u_modelViewMatrix", m_mv);
-			m_PhongShader.SetUniformMat3f("u_normalMatrix", m_normMatrix);
-			m_PhongShader.SetUniformMat4f("u_MVP", m_projView * m_mv);
-			m_geometry.GenerateSphere(m_radius, (unsigned int)m_slices, (unsigned int)m_stacks);
+			// Create a window called "My First Tool", with a menu bar.
+			ImGui::Begin("Light Properties", &m_lightPropWindow, ImGuiWindowFlags_MenuBar);
+
+			ImGui::SliderFloat3("Translation C", &m_translationC.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation F", &m_translationF.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation G", &m_translationG.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation H", &m_translationH.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation I", &m_translationI.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation J", &m_translationJ.x, 0.0f, 960.0f);
+			ImGui::SliderFloat3("Translation K", &m_translationK.x, 0.0f, 960.0f);
+			ImGui::SliderFloat("Torus Inner Rings", &m_innerRadius, 0.0f, 500.0f);
+			ImGui::SliderFloat("Torus Outer Rings", &m_outerRadius, 0.0f, 500.0f);
+			ImGui::SliderInt("Torus Rings", &m_rings, 20, 200);
+			ImGui::SliderInt("Torus Sides", &m_sides, 20, m_rings);
+			ImGui::SliderFloat3("Ambient Light", &m_laValue.x, 0.0f, 1.0f);
+			ImGui::SliderFloat3("Diffuse and Spec Intensity", &m_lValue.x, 0.0f, 1.0f);
+			ImGui::SliderFloat3("Lid Position", &m_lidTransform.x, 0.0f, 10.0f);
+			ImGui::SliderFloat4("Light Object", &m_lightPos.x, -100.0f, 960.0f);
+			ImGui::SliderFloat3("Light Intensity", &m_lightIntensity.x, 0.0f, 1.0f);
+			ImGui::SliderFloat3("Light Reflection", &m_diffRefl.x, 0.0f, 1.0f);
+			ImGui::SliderFloat("Radius", &m_radius, 10.0f, 100.0f);
+			ImGui::SliderInt("Slices", &m_slices, 6, 100);
+			ImGui::SliderInt("Slaces", &m_stacks, 6, 100);
+			ImGui::SliderInt("Teap Pot Grid", &m_teaPotGrid, 1, 100);
+
+			{
+				rmt_BeginOpenGLSample();
+				rmt_BeginCPUSample(CircleOneRender, 0);
+				rmt_LogText("Circle 1");
+				glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationC);
+				//m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+				/* Model View Projection Calculation */
+				/* (In OpenGL its Projection View Model) */
+				glm::mat4 m_mv = m_camera.GetViewMatrix() * m_model;
+				glm::mat4 m_projView = m_camera.GetProjView();
+				glm::mat3 m_normMatrix = glm::mat3(glm::vec3(m_mv[0]), glm::vec3(m_mv[1]), glm::vec3(m_mv[2]));
+				m_PhongShader.Bind();
+				m_PhongShader.SetUniformVec3f("u_kd", m_diffRefl);
+				m_PhongShader.SetUniformVec3f("u_ld", m_lightIntensity);
+				m_PhongShader.SetUniformVec4f("u_lightPosition", m_camera.GetViewMatrix() * m_lightPos);
+				m_PhongShader.SetUniformMat4f("u_modelViewMatrix", m_mv);
+				m_PhongShader.SetUniformMat3f("u_normalMatrix", m_normMatrix);
+				m_PhongShader.SetUniformMat4f("u_MVP", m_projView * m_mv);
+				m_geometry.GenerateSphere(m_radius, (unsigned int)m_slices, (unsigned int)m_stacks);
+				rmt_EndCPUSample();
+			}
+
+			{
+				rmt_BeginOpenGLSample();
+				rmt_BeginCPUSample(CircleTwoRender, 0);
+				rmt_LogText("Circle 2");
+				glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationF);
+				//m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+				/* Model View Projection Calculation */
+				/* (In OpenGL its Projection View Model) */
+				glm::mat4 m_mv = m_camera.GetViewMatrix() * m_model;
+				glm::mat4 m_projView = m_camera.GetProjView();
+				glm::mat3 m_normMatrix = glm::mat3(glm::vec3(m_mv[0]), glm::vec3(m_mv[1]), glm::vec3(m_mv[2]));
+				m_PhongReflectionShader.Bind();
+				m_PhongReflectionShader.SetUniformVec3f("Material.u_kd", m_diffRefl);
+				m_PhongReflectionShader.SetUniformVec3f("Light.u_ld", m_lightIntensity);
+				m_PhongReflectionShader.SetUniformVec4f("Light.u_position", m_camera.GetViewMatrix() * m_lightPos);
+				m_PhongReflectionShader.SetUniformMat4f("u_modelViewMatrix", m_mv);
+				m_PhongReflectionShader.SetUniformMat3f("u_normalMatrix", m_normMatrix);
+				m_PhongReflectionShader.SetUniformMat4f("u_MVP", m_projView * m_mv);
+				m_geometry.GenerateSphere(m_radius, (unsigned int)m_slices, (unsigned int)m_stacks);
+				rmt_EndCPUSample();
+			}
+
+			GLuint m_phongIndex = glGetSubroutineIndex(m_PhongReflectionShaderMark2.GetHandle(), GL_VERTEX_SHADER, "PhongModel");
+			GLuint m_diffuseIndex = glGetSubroutineIndex(m_PhongReflectionShaderMark2.GetHandle(), GL_VERTEX_SHADER, "DiffuseOnly");
+
+			{
+				rmt_BeginOpenGLSample();
+				rmt_BeginCPUSample(TeaPotRender, 0);
+				rmt_LogText("Tea Pot Render");
+				glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationG);
+				//m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+				/* Model View Projection Calculation */
+				/* (In OpenGL its Projection View Model) */
+				glm::mat4 m_mv = m_camera.GetViewMatrix() * m_model;
+				glm::mat4 m_projView = m_camera.GetProjView();
+				glm::mat3 m_normMatrix = glm::mat3(glm::vec3(m_mv[0]), glm::vec3(m_mv[1]), glm::vec3(m_mv[2]));
+				m_PhongReflectionShaderMark2.Bind();
+				glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &m_phongIndex);
+				m_PhongReflectionShaderMark2.SetUniformVec3f("Material.u_kd", m_diffRefl);
+				m_PhongReflectionShaderMark2.SetUniformVec3f("Light.u_ld", m_lightIntensity);
+				m_PhongReflectionShaderMark2.SetUniformVec4f("Light.u_position", m_camera.GetViewMatrix() * m_lightPos);
+				m_PhongReflectionShaderMark2.SetUniformMat4f("u_modelViewMatrix", m_mv);
+				m_PhongReflectionShaderMark2.SetUniformMat3f("u_normalMatrix", m_normMatrix);
+				m_PhongReflectionShaderMark2.SetUniformMat4f("u_MVP", m_projView * m_mv);
+				m_geometry.GenerateTeaPot(m_teaPotGrid, glm::translate(glm::mat4(1.0f), m_lidTransform));
+				rmt_EndCPUSample();
+			}
+
+			{
+				rmt_BeginOpenGLSample();
+				rmt_BeginCPUSample(TeaPotRender2, 0);
+				rmt_LogText("Tea Pot 2 Render");
+				glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationH);
+				//m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+				/* Model View Projection Calculation */
+				/* (In OpenGL its Projection View Model) */
+				glm::mat4 m_mv = m_camera.GetViewMatrix() * m_model;
+				glm::mat4 m_projView = m_camera.GetProjView();
+				glm::mat3 m_normMatrix = glm::mat3(glm::vec3(m_mv[0]), glm::vec3(m_mv[1]), glm::vec3(m_mv[2]));
+				m_PhongReflectionShaderMark2.Bind();
+				glUniformSubroutinesuiv(GL_VERTEX_SHADER, 1, &m_diffuseIndex);
+				m_PhongReflectionShaderMark2.SetUniformVec3f("Material.u_kd", m_diffRefl);
+				m_PhongReflectionShaderMark2.SetUniformVec3f("Light.u_ld", m_lightIntensity);
+				m_PhongReflectionShaderMark2.SetUniformVec4f("Light.u_position", m_camera.GetViewMatrix() * m_lightPos);
+				m_PhongReflectionShaderMark2.SetUniformMat4f("u_modelViewMatrix", m_mv);
+				m_PhongReflectionShaderMark2.SetUniformMat3f("u_normalMatrix", m_normMatrix);
+				m_PhongReflectionShaderMark2.SetUniformMat4f("u_MVP", m_projView * m_mv);
+				//m_geometry.GenerateTeaPot(m_teaPotGrid, glm::translate(glm::mat4(1.0f), m_lidTransform));
+				m_geometry.GenerateTorus(m_outerRadius, m_innerRadius, m_sides, m_rings);
+				rmt_EndCPUSample();
+			}
+
+			{
+				rmt_BeginOpenGLSample();
+				rmt_BeginCPUSample(TeaPotRender2, 0);
+				rmt_LogText("Tea Pot 2 Render");
+				glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationJ);
+				//m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+				/* Model View Projection Calculation */
+				/* (In OpenGL its Projection View Model) */
+				glm::mat4 m_mv = m_camera.GetViewMatrix() * m_model;
+				glm::mat4 m_projView = m_camera.GetProjView();
+				glm::mat3 m_normMatrix = glm::mat3(glm::vec3(m_mv[0]), glm::vec3(m_mv[1]), glm::vec3(m_mv[2]));
+				m_multipleLightsShader.Bind();
+				m_multipleLightsShader.SetUniformVec3f("Material.u_kd", m_diffRefl);
+				m_multipleLightsShader.SetUniformMat4f("u_modelViewMatrix", m_mv);
+				m_multipleLightsShader.SetUniformMat3f("u_normalMatrix", m_normMatrix);
+				m_multipleLightsShader.SetUniformMat4f("u_MVP", m_projView * m_mv);
+
+				m_multipleLightsShader.SetUniformVec3f("Lights[0].u_l", m_lValue);
+				m_multipleLightsShader.SetUniformVec3f("Lights[1].u_l", m_lValue);
+				m_multipleLightsShader.SetUniformVec3f("Lights[2].u_l", m_lValue);
+				m_multipleLightsShader.SetUniformVec3f("Lights[3].u_l", m_lValue);
+				m_multipleLightsShader.SetUniformVec3f("Lights[4].u_l", m_lValue);
+
+
+				m_multipleLightsShader.SetUniformVec3f("Lights[0].u_la", m_laValue);
+				m_multipleLightsShader.SetUniformVec3f("Lights[1].u_la", m_laValue);
+				m_multipleLightsShader.SetUniformVec3f("Lights[2].u_la", m_laValue);
+				m_multipleLightsShader.SetUniformVec3f("Lights[3].u_la", m_laValue);
+				m_multipleLightsShader.SetUniformVec3f("Lights[4].u_la", m_laValue);
+
+				m_geometry.GenerateTorus(m_outerRadius, m_innerRadius, m_sides, m_rings);
+				rmt_EndCPUSample();
+			}
+
+			{
+				rmt_BeginOpenGLSample();
+				rmt_BeginCPUSample(TeaPotRender3, 0);
+				rmt_LogText("Tea Pot 2 Render");
+				glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationI);
+				//m_model = glm::rotate(m_model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+				/* Model View Projection Calculation */
+				/* (In OpenGL its Projection View Model) */
+				glm::mat4 m_mv = m_camera.GetViewMatrix() * m_model;
+				glm::mat4 m_projView = m_camera.GetProjView();
+				glm::mat3 m_normMatrix = glm::mat3(glm::vec3(m_mv[0]), glm::vec3(m_mv[1]), glm::vec3(m_mv[2]));
+				m_PerfLookShader.Bind();
+				m_PerfLookShader.SetUniformVec3f("Material.u_kd", m_diffRefl);
+				m_PerfLookShader.SetUniformVec3f("Light.u_ld", m_lightIntensity);
+				m_PerfLookShader.SetUniformVec4f("Light.u_position", m_camera.GetViewMatrix() * m_lightPos);
+				m_PerfLookShader.SetUniformMat4f("u_modelViewMatrix", m_mv);
+				m_PerfLookShader.SetUniformMat3f("u_normalMatrix", m_normMatrix);
+				m_PerfLookShader.SetUniformMat4f("u_MVP", m_projView * m_mv);
+				m_geometry.GenerateTeaPot(m_teaPotGrid, glm::translate(glm::mat4(1.0f), m_lidTransform));
+				rmt_EndCPUSample();
+			}
+			ImGui::End();
 		}
 
-		{
-			glm::mat4 m_model = glm::translate(glm::mat4(1.0f), m_translationE);
-			m_model = glm::scale(m_model, glm::vec3(10.0f, 10.0f, 10.0f));
-			glm::mat4 m_mvp = m_camera.GetProjView() * m_camera.GetViewMatrix() * m_model;
-			m_cowModelShader.Bind();
-			m_cowModelShader.SetUniformMat4f("u_MVP", m_mvp);
-			m_cowModelLoad.DrawModel(m_cowModelShader);
-
-		}
 		rmt_EndCPUSample();
-		
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

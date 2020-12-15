@@ -1,4 +1,5 @@
 #include "Geometry.h"
+#include "TeaPotData.h"
 
 Geometry::Geometry()
 {
@@ -49,7 +50,8 @@ void Geometry::GenerateQuad()
 void Geometry::GenerateCube()
 {
 	/* Vertex Positions for Cube */
-	float m_vertices[24 * 5] = {
+	float m_vertices[24 * 5] = 
+	{
 		 80.0f, -80.0f, -80.0f,  0.0f, 0.0f, // 0
 		-80.0f, -80.0f, -80.0f,  1.0f, 0.0f, // 1
 		-80.0f,  80.0f, -80.0f,  1.0f, 1.0f, // 2
@@ -82,7 +84,7 @@ void Geometry::GenerateCube()
 	};
 
 	/* Indices for Cube */
-	unsigned int m_indices[12 * 3]= 
+	unsigned int m_indices[12 * 3] =
 	{
 		0, 1, 2, //First Triangle
 		2, 3, 0, //Second Triangle
@@ -102,6 +104,8 @@ void Geometry::GenerateCube()
 		20, 21, 22,
 		22, 23, 20,
 	};
+
+	//InitBuffers(&m_indices, &m_vertices);
 
 	VertexBuffer VB(m_vertices, 24 * 5 * sizeof(float));
 	VertexBufferLayout Layout;
@@ -125,6 +129,9 @@ void Geometry::GenerateCube()
 
 void Geometry::GenerateSphere(float a_radius, unsigned int a_nSlices, unsigned int a_nStacks)
 {
+	/* Slices are how many lines connect the circle from front to back */
+	/* Stacks are how many lines are drawn around the circle */
+
 	int m_nVerts = (a_nSlices + 1) * (a_nStacks + 1);
 	int m_elements = (a_nSlices * 2 * (a_nStacks - 1)) * 3;
 
@@ -192,91 +199,315 @@ void Geometry::GenerateSphere(float a_radius, unsigned int a_nSlices, unsigned i
 		}
 	}
 
-	InitSphere(&m_el, &m_p, &m_n, &m_tex);
+	/* Triangle Mesh InitBuffers */
+	InitBuffers(&m_el, &m_p, &m_n, &m_tex);
 }
 
-void Geometry::InitSphere(std::vector<GLuint>* a_indices,
-						  std::vector<GLfloat>* a_points,
-						  std::vector<GLfloat>* a_normals,
-						  std::vector<GLfloat>* a_texCoords,
-						  std::vector<GLfloat>* a_tangents)
+void Geometry::GenerateTeaPot(int a_grid, const glm::mat4& a_lidTransform)
 {
+	int m_verts = 32 * (a_grid + 1) * (a_grid + 1);
+	int m_faces = a_grid * a_grid * 32;
+	std::vector<GLfloat> m_p(m_verts * 3);
+	std::vector<GLfloat> m_n(m_verts * 3);
+	std::vector<GLfloat> m_tc(m_verts * 2);
+	std::vector<GLuint> m_el(m_faces * 6);
 
-	// Must have data for indices, points, and normals
-	if (a_indices == nullptr || a_points == nullptr || a_normals == nullptr)
-		return;
+	GeneratePatches(m_p, m_n, m_tc, m_el, a_grid);
+	MoveLid(a_grid, m_p, a_lidTransform);
 
-	m_sphereVerts = (GLuint)a_indices->size();
-
-	GLuint indexBuf = 0, posBuf = 0, normBuf = 0, tcBuf = 0, tangentBuf = 0;
-	glGenBuffers(1, &indexBuf);
-	m_spherebuffers.push_back(indexBuf);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuf);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, a_indices->size() * sizeof(GLuint), a_indices->data(), GL_STATIC_DRAW);
-
-	glGenBuffers(1, &posBuf);
-	m_spherebuffers.push_back(posBuf);
-	glBindBuffer(GL_ARRAY_BUFFER, posBuf);
-	glBufferData(GL_ARRAY_BUFFER, a_points->size() * sizeof(GLfloat), a_points->data(), GL_STATIC_DRAW);
-
-	glGenBuffers(1, &normBuf);
-	m_spherebuffers.push_back(normBuf);
-	glBindBuffer(GL_ARRAY_BUFFER, normBuf);
-	glBufferData(GL_ARRAY_BUFFER, a_normals->size() * sizeof(GLfloat), a_normals->data(), GL_STATIC_DRAW);
-
-	if (a_texCoords != nullptr) {
-		glGenBuffers(1, &tcBuf);
-		m_spherebuffers.push_back(tcBuf);
-		glBindBuffer(GL_ARRAY_BUFFER, tcBuf);
-		glBufferData(GL_ARRAY_BUFFER, a_texCoords->size() * sizeof(GLfloat), a_texCoords->data(), GL_STATIC_DRAW);
-	}
-
-	if (a_tangents != nullptr) {
-		glGenBuffers(1, &tangentBuf);
-		m_spherebuffers.push_back(tangentBuf);
-		glBindBuffer(GL_ARRAY_BUFFER, tangentBuf);
-		glBufferData(GL_ARRAY_BUFFER, a_tangents->size() * sizeof(GLfloat), a_tangents->data(), GL_STATIC_DRAW);
-	}
-
-	glGenVertexArrays(1, &m_sphereVao);
-	glBindVertexArray(m_sphereVao);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuf);
-
-	// Position
-	glBindBuffer(GL_ARRAY_BUFFER, posBuf);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);  // Vertex position
-
-	// Normal
-	glBindBuffer(GL_ARRAY_BUFFER, normBuf);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(1);  // Normal
-
-	// Tex coords
-	if (a_texCoords != nullptr) {
-		glBindBuffer(GL_ARRAY_BUFFER, tcBuf);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0);
-		glEnableVertexAttribArray(2);  // Tex coord
-	}
-
-	if (a_tangents != nullptr) {
-		glBindBuffer(GL_ARRAY_BUFFER, tangentBuf);
-		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 0, 0);
-		glEnableVertexAttribArray(3);  // Tangents
-	}
-
-	glBindVertexArray(0);
-
-	DrawSphere();
+	InitBuffers(&m_el, &m_p, &m_n, &m_tc);
 }
 
-void Geometry::DrawSphere()
+void Geometry::GenerateTorus(GLfloat a_outerRadius, GLfloat a_innerRadius, GLuint a_nsides, GLuint a_nRings)
 {
-	glBindVertexArray(m_sphereVao);
-	
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	GLuint m_faces = a_nsides * a_nRings;
+	/* One Extra Ring to duplicate first ring */
+	int m_nVerts = a_nsides * (a_nRings + 1);
 
-	glDrawElements(GL_TRIANGLES, m_sphereVerts, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+	/* Points */
+	std::vector<GLfloat> m_p(3 * m_nVerts);
+	/* Normals */
+	std::vector<GLfloat> m_n(3 * m_nVerts);
+	/* Tex Coords */
+	std::vector<GLfloat> m_tc(2 * m_nVerts);
+	/* Elements */
+	std::vector<GLuint> m_el(6 * m_faces);
+
+	/* Generate the Vertex Data */
+	float m_ringFactor = glm::two_pi<float>() / a_nRings;
+	float m_sideFactor = glm::two_pi<float>() / a_nsides;
+	int m_idx = 0, m_tidx = 0;
+
+	for (GLuint m_ring = 0; m_ring <= a_nsides; m_ring++)
+	{
+		float m_u = m_ring * m_ringFactor;
+		float m_cu = cos(m_u);
+		float m_su = sin(m_u);
+
+		for (GLuint m_side = 0; m_side < a_nsides; m_side++)
+		{
+			float m_v = m_side * m_sideFactor;
+			float m_cv = cos(m_v);
+			float m_sv = sin(m_v);
+			float m_r = (a_outerRadius + a_innerRadius * m_cv);
+
+			m_p[m_idx] = m_r * m_cu;
+			m_p[m_idx + 1] = m_r * m_su;
+			m_p[m_idx + 2] = a_innerRadius * m_sv;
+			m_n[m_idx] = m_cv * m_cu * m_r;
+			m_n[m_idx + 1] = m_cv * m_su * m_r;
+			m_n[m_idx + 2] = m_sv * m_r;
+			m_tc[m_tidx] = m_u / glm::two_pi<float>();
+			m_tc[m_tidx + 1] = m_v / glm::two_pi<float>();
+			m_tidx += 2;
+
+			/* Normalize */
+			float m_len = sqrt(m_n[m_idx] * m_n[m_idx] + 
+							   m_n[m_idx + 1] * m_n[m_idx + 1] +
+							   m_n[m_idx + 2] * m_n[m_idx + 2]);
+
+			m_n[m_idx] /= m_len;
+			m_n[m_idx + 1] /= m_len;
+			m_n[m_idx + 2] /= m_len;
+			m_idx += 3;
+		}
+	}
+
+	m_idx = 0;
+	for (GLuint l_ring = 0; l_ring < a_nRings; l_ring++)
+	{
+		GLuint m_ringStart = l_ring * a_nsides;
+		GLuint m_nextRingStart = (l_ring + 1) * a_nsides;
+
+		for (GLuint l_side = 0; l_side < a_nsides; l_side++)
+		{
+			int m_nextSide = (l_side + 1) % a_nsides;
+
+			/* The Quad */
+			m_el[m_idx] = (m_ringStart + l_side);
+			m_el[m_idx + 1] = (m_nextRingStart + l_side);
+			m_el[m_idx + 2] = (m_nextRingStart + m_nextSide);
+			m_el[m_idx + 3] = m_ringStart + l_side;
+			m_el[m_idx + 4] = m_nextRingStart + m_nextSide;
+			m_el[m_idx + 5] = (m_ringStart + m_nextSide);
+			m_idx += 6;
+		}
+	}
+
+	InitBuffers(&m_el, &m_p, &m_n, &m_tc);
+}
+
+void Geometry::GeneratePatches(std::vector<GLfloat>& a_p, std::vector<GLfloat>& a_n, std::vector<GLfloat>& a_tc, std::vector<GLuint>& a_el, int a_grid)
+{
+	std::vector<GLfloat> m_B(4 * (a_grid + 1)); /* Pre-Computed Bernstein basis functions */
+	std::vector<GLfloat> m_DB(4 * (a_grid + 1)); /* Pre-Computed derivitives of basis functions */
+
+	int m_idx = 0, m_elIndex = 0, m_tcIndex = 0;
+
+	/* Pre-Compute the basis functions (Bernstein Polynomials) */
+	/* And their derivatives */
+	ComputerBasesFunctions(m_B, m_DB, a_grid);
+
+	/* Build each patch */
+	/* The Rim */
+	BuildPatchReflect(0, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, true, true);
+	/* The Body */
+	BuildPatchReflect(1, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, true, true);
+	BuildPatchReflect(2, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, true, true);
+	/* The Lid */
+	BuildPatchReflect(3, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, true, true);
+	BuildPatchReflect(4, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, true, true);
+	/* The Bottom */
+	BuildPatchReflect(5, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, true, true);
+	/* The Handle */
+	BuildPatchReflect(6, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, false, true);
+	BuildPatchReflect(7, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, false, true);
+	/* The Spout */
+	BuildPatchReflect(8, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, false, true);
+	BuildPatchReflect(9, m_B, m_DB, a_p, a_n, a_tc, a_el, m_idx, m_elIndex, m_tcIndex, a_grid, false, true);
+}
+
+void Geometry::BuildPatchReflect(int a_patchNum, std::vector<GLfloat>& a_b,
+								 std::vector<GLfloat>& a_db, std::vector<GLfloat>& a_v,
+								 std::vector<GLfloat>& a_n, std::vector<GLfloat>& a_tc,
+								 std::vector<GLuint>& a_el, int& a_index, int& a_elIndex,
+								 int& a_tcIndex, int a_grid, bool a_reflectX, bool a_reflectY)
+{
+	glm::vec3 m_patch[4][4];
+	glm::vec3 m_patchRevV[4][4];
+	GetPatch(a_patchNum, m_patch, false);
+	GetPatch(a_patchNum, m_patchRevV, true);
+
+	// Patch without modification
+	BuildPatch(m_patch, a_b, a_db, a_v, a_n, a_tc, a_el,
+		a_index, a_elIndex, a_tcIndex, a_grid, glm::mat3(1.0f), true);
+
+	// Patch reflected in x
+	if (a_reflectX) {
+		BuildPatch(m_patchRevV, a_b, a_db, a_v, a_n, a_tc, a_el,
+			a_index, a_elIndex, a_tcIndex, a_grid, glm::mat3(glm::vec3(-1.0f, 0.0f, 0.0f),
+				glm::vec3(0.0f, 1.0f, 0.0f),
+				glm::vec3(0.0f, 0.0f, 1.0f)), false);
+	}
+
+	// Patch reflected in y
+	if (a_reflectY) {
+		BuildPatch(m_patchRevV, a_b, a_db, a_v, a_n, a_tc, a_el,
+			a_index, a_elIndex, a_tcIndex, a_grid, glm::mat3(glm::vec3(1.0f, 0.0f, 0.0f),
+				glm::vec3(0.0f, -1.0f, 0.0f),
+				glm::vec3(0.0f, 0.0f, 1.0f)), false);
+	}
+
+	// Patch reflected in x and y
+	if (a_reflectX && a_reflectY) {
+		BuildPatch(m_patch, a_b, a_db, a_v, a_n, a_tc, a_el,
+			a_index, a_elIndex, a_tcIndex, a_grid, glm::mat3(glm::vec3(-1.0f, 0.0f, 0.0f),
+				glm::vec3(0.0f, -1.0f, 0.0f),
+				glm::vec3(0.0f, 0.0f, 1.0f)), true);
+	}
+}
+
+void Geometry::BuildPatch(glm::vec3 patch[][4],
+						  std::vector<GLfloat>& a_B, std::vector<GLfloat>& a_dB,
+						  std::vector<GLfloat>& a_v, std::vector<GLfloat>& a_n,
+						  std::vector<GLfloat>& a_tc, std::vector<GLuint>& a_el,
+						  int& a_index, int& a_elIndex, int& a_tcIndex, int a_grid, glm::mat3 a_reflect,
+						  bool a_invertNormal)
+{
+	int m_startIndex = a_index / 3;
+	float m_tcFactor = 1.0f / a_grid;
+
+	for (int i = 0; i <= a_grid; i++)
+	{
+		for (int j = 0; j <= a_grid; j++)
+		{
+			glm::vec3 pt = a_reflect * Evaluate(i, j, a_B, patch);
+			glm::vec3 norm = a_reflect * EvaluateNormal(i, j, a_B, a_dB, patch);
+			if (a_invertNormal)
+				norm = -norm;
+
+			a_v[a_index] = pt.x;
+			a_v[a_index + 1] = pt.y;
+			a_v[a_index + 2] = pt.z;
+
+			a_n[a_index] = norm.x;
+			a_n[a_index + 1] = norm.y;
+			a_n[a_index + 2] = norm.z;
+
+			a_tc[a_tcIndex] = i * m_tcFactor;
+			a_tc[a_tcIndex + 1] = j * m_tcFactor;
+
+			a_index += 3;
+			a_tcIndex += 2;
+		}
+	}
+
+	for (int i = 0; i < a_grid; i++)
+	{
+		int iStart = i * (a_grid + 1) + m_startIndex;
+		int nextiStart = (i + 1) * (a_grid + 1) + m_startIndex;
+		for (int j = 0; j < a_grid; j++)
+		{
+			a_el[a_elIndex] = iStart + j;
+			a_el[a_elIndex + 1] = nextiStart + j + 1;
+			a_el[a_elIndex + 2] = nextiStart + j;
+
+			a_el[a_elIndex + 3] = iStart + j;
+			a_el[a_elIndex + 4] = iStart + j + 1;
+			a_el[a_elIndex + 5] = nextiStart + j + 1;
+
+			a_elIndex += 6;
+		}
+	}
+}
+
+void Geometry::GetPatch(int a_patchNum, glm::vec3 a_patch[][4], bool a_reverseV)
+{
+	for (int u = 0; u < 4; u++) {          // Loop in u direction
+		for (int v = 0; v < 4; v++) {     // Loop in v direction
+			if (a_reverseV) {
+				a_patch[u][v] = glm::vec3(
+					TeapotData::cpdata[TeapotData::patchdata[a_patchNum][u * 4 + (3 - v)]][0],
+					TeapotData::cpdata[TeapotData::patchdata[a_patchNum][u * 4 + (3 - v)]][1],
+					TeapotData::cpdata[TeapotData::patchdata[a_patchNum][u * 4 + (3 - v)]][2]
+				);
+			}
+			else {
+				a_patch[u][v] = glm::vec3(
+					TeapotData::cpdata[TeapotData::patchdata[a_patchNum][u * 4 + v]][0],
+					TeapotData::cpdata[TeapotData::patchdata[a_patchNum][u * 4 + v]][1],
+					TeapotData::cpdata[TeapotData::patchdata[a_patchNum][u * 4 + v]][2]
+				);
+			}
+		}
+	}
+}
+
+void Geometry::ComputerBasesFunctions(std::vector<GLfloat>& a_b, std::vector<GLfloat>& a_db, int a_grid)
+{
+	float m_inc = 1.0f / a_grid;
+	for (int i = 0; i <= a_grid; i++)
+	{
+		float t = i * m_inc;
+		float tSqr = t * t;
+		float oneMinusT = (1.0f - t);
+		float oneMinusT2 = oneMinusT * oneMinusT;
+
+		a_b[i * 4 + 0] = oneMinusT * oneMinusT2;
+		a_b[i * 4 + 1] = 3.0f * oneMinusT2 * t;
+		a_b[i * 4 + 2] = 3.0f * oneMinusT * tSqr;
+		a_b[i * 4 + 3] = t * tSqr;
+
+		a_db[i * 4 + 0] = -3.0f * oneMinusT2;
+		a_db[i * 4 + 1] = -6.0f * t * oneMinusT + 3.0f * oneMinusT2;
+		a_db[i * 4 + 2] = -3.0f * tSqr + 6.0f * t * oneMinusT;
+		a_db[i * 4 + 3] = 3.0f * tSqr;
+	}
+}
+
+glm::vec3 Geometry::Evaluate(int a_gridU, int a_gridV, std::vector<GLfloat>& a_b, glm::vec3 a_patch[][4])
+{
+	glm::vec3 m_p(0.0f, 0.0f, 0.0f);
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			m_p += a_patch[i][j] * a_b[a_gridU * 4 + i] * a_b[a_gridV * 4 + j];
+		}
+	}
+	return m_p;
+}
+
+glm::vec3 Geometry::EvaluateNormal(int a_gridU, int a_gridV, std::vector<GLfloat>& a_b, std::vector<GLfloat>& a_db, glm::vec3 a_patch[][4])
+{
+	glm::vec3 m_du(0.0f, 0.0f, 0.0f);
+	glm::vec3 m_dv(0.0f, 0.0f, 0.0f);
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			m_du += a_patch[i][j] * a_db[a_gridU * 4 + i] * a_b[a_gridV * 4 + j];
+			m_dv += a_patch[i][j] * a_b[a_gridU * 4 + i] * a_db[a_gridV * 4 + j];
+		}
+	}
+
+	glm::vec3 m_norm = glm::cross(m_du, m_dv);
+	if (glm::length(m_norm) != 0.0f) {
+		m_norm = glm::normalize(m_norm);
+	}
+
+	return m_norm;
+}
+
+void Geometry::MoveLid(int a_grid, std::vector<GLfloat>& a_p, const glm::mat4& a_lidTransform)
+{
+	int m_start = 3 * 12 * (a_grid + 1) * (a_grid + 1);
+	int m_end = 3 * 20 * (a_grid + 1) * (a_grid + 1);
+
+	for (int i = m_start; i < m_end; i+=3)
+	{
+		glm::vec4 m_vert = glm::vec4(a_p[i], a_p[i + 1], a_p[i+ 2], 1.0f);
+		m_vert = a_lidTransform * m_vert;
+
+		a_p[i] = m_vert.x;
+		a_p[i + 1] = m_vert.y;
+		a_p[i + 2] = m_vert.z;
+	}
 }

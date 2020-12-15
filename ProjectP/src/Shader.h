@@ -70,12 +70,13 @@ public:
 	void PrintActiveUniforms();
 
 	/* Set Uniform Functions */
-	void SetUniform1f(const std::string &a_name, float a_value);
+	void SetUniform1f(const std::string& a_name, float a_value);
 	void SetUniform1i(const std::string& a_name, int a_value);
-	void SetUniformMat4f(const std::string& a_name, const glm::mat4& a_matrix);
 	void SetUniform4f(const std::string& a_name, float v0, float v1, float v2, float v3);
-	void SetUniformMat3f(const std::string& a_name, glm::mat3& a_value);
+	void SetUniform3f(const std::string& a_name, float v0, float v1, float v2);
 	void SetUniform1b(const std::string& a_name, bool a_value);
+	void SetUniformMat3f(const std::string& a_name, const glm::mat3& a_value);
+	void SetUniformMat4f(const std::string& a_name, const glm::mat4& a_matrix);
 	void SetUniformVec3f(const std::string& a_name, const glm::vec3& a_value);
 	void SetUniformVec4f(const std::string& a_name, const glm::vec4& a_value);
 
@@ -85,9 +86,6 @@ public:
 	/* Deletes the Shader Program */
 	void TerminateProgram();
 	void DetachAndDeleteShaders();
-
-
-
 
 	void CreateShaderPrograms();
 
