@@ -115,7 +115,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLAD\include;$(SolutionDir)Dependencies\GLAD\include\KHR;$(SolutionDir)Dependencies\Assimp-3.18\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\Extra\imgui;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLAD\include;$(SolutionDir)Dependencies\GLAD\include\KHR;$(SolutionDir)Dependencies\Assimp-3.18\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,7 +151,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLAD\include;$(SolutionDir)Dependencies\GLAD\include\KHR;$(SolutionDir)Dependencies\Assimp-3.18\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)src\Extra\imgui;$(SolutionDir)Dependencies\GLM;$(SolutionDir)Dependencies\GLFW\include;$(SolutionDir)Dependencies\GLAD\include;$(SolutionDir)Dependencies\GLAD\include\KHR;$(SolutionDir)Dependencies\Assimp-3.18\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="Dependencies\GLAD\src\glad.c" />
     <ClCompile Include="src\Extra\imgui\ImGuizmo.cpp" />
+    <ClCompile Include="src\Extra\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\Extra\Remotery\lib\Remotery.c" />
     <ClCompile Include="src\Geometry.cpp" />
     <ClCompile Include="src\Model.cpp" />
@@ -253,6 +254,7 @@
     <Image Include="Textures\WallPaper2.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="imgui.ini" />
     <None Include="src\Extra\Remotery\lib\RemoteryMetal.mm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

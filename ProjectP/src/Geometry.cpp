@@ -199,6 +199,8 @@ void Geometry::GenerateSphere(float a_radius, unsigned int a_nSlices, unsigned i
 		}
 	}
 
+
+
 	/* Triangle Mesh InitBuffers */
 	InitBuffers(&m_el, &m_p, &m_n, &m_tex);
 }

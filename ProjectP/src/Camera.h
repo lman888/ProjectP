@@ -85,7 +85,12 @@ public:
 
 	glm::mat4 GetProjView()
 	{
-		return m_persProjView = glm::perspective(glm::radians(GetCameraFOV()), (float)m_scrWidth / (float)m_scrHeight, 0.1f, 1000.0f);
+		return m_persProjView;// = glm::perspective(glm::radians(GetCameraFOV()), (float)m_scrWidth / (float)m_scrHeight, 0.1f, 13000.0f);
+	}
+
+	void SetProjView(glm::mat4 a_persProj)
+	{
+		m_persProjView = a_persProj;
 	}
 
 protected:

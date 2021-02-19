@@ -69,7 +69,6 @@ Mesh Model::ProcessMesh(aiMesh* a_mesh, const aiScene* a_scene)
             glm::vec2 vec;
             vec.x = a_mesh->mTextureCoords[0][i].x;
             vec.y = a_mesh->mTextureCoords[0][i].y;
-
             vertex.TexCoords = vec;
         }
         else
@@ -103,10 +102,12 @@ std::vector<MyTexture> Model::LoadMaterialTextures(aiMaterial* a_mat, aiTextureT
 {
     std::vector<MyTexture> textures;
 
-    for (unsigned int i = 0; i < a_mat->GetTextureCount(a_type); i++)
+    for (unsigned int i = 0; i <= a_mat->GetTextureCount(a_type); i++)
     {
         aiString str;
+
         a_mat->GetTexture(a_type, i, &str);
+
         bool skip = false;
 
         for (unsigned int j = 0; j < m_texturesLoaded.size(); j++)
@@ -119,6 +120,7 @@ std::vector<MyTexture> Model::LoadMaterialTextures(aiMaterial* a_mat, aiTextureT
             }
         }
 
+        /* If the Texture has not been loaded, load it */
         if (!skip)
         {
             MyTexture texture;
@@ -131,7 +133,6 @@ std::vector<MyTexture> Model::LoadMaterialTextures(aiMaterial* a_mat, aiTextureT
 
         return textures;
     }
-
 }
 
 unsigned int Model::TextureFromFile(const char* a_path, const std::string& a_directory)
@@ -169,7 +170,7 @@ unsigned int Model::TextureFromFile(const char* a_path, const std::string& a_dir
     }
     else
     {
-        std::cout << "Texture Failed to Load at Path" << a_path << std::endl;
+        std::cout << "Texture Failed to Load at Path: " << a_path << std::endl;
     }
 
     return textureID;

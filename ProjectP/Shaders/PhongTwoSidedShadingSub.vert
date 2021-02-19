@@ -51,7 +51,7 @@ vec3 PhongModel(vec3 position, vec3 n)
 subroutine(m_shaderModelType)
 vec3 DiffuseOnly(vec3 a_position, vec3 a_norm)
 {
-	vec3 s = normalize(Light.u_position.xyz - a_position);
+	vec3 s = normalize(vec3(Light.u_position.xyz - a_position));
 	vec3 diffuse = Light.u_ld * Material.u_kd * max( dot(s, a_norm), 0.0 );
 	
 	return diffuse;

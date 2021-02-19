@@ -146,6 +146,7 @@ void Shader::Link()
 			int m_written = 0;
 			glGetProgramInfoLog(m_handle, m_length, &m_written, &m_log[0]);
 			m_errString += m_log;
+			std::cout << m_errString << std::endl;
 		}
 	}
 	else
